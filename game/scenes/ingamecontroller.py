@@ -5,7 +5,7 @@ from pyglet.window import Window
 
 class IngameController:
     def __init__(self, window: Window, save: dict) -> None:
-        self.scene_name = "final_scene" if save["game"]["night"] == 20 else "night_scene"
+        self.scene_name = "night_scene"
         self.scene_obj = None
         self.window = window
         self.save = save

@@ -304,6 +304,7 @@ class Scene:
         return entity.relations
 
     # ---------- DRAW ----------
+
     def _draw(self) -> None:
         self.window.clear()
     

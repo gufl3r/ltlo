@@ -32,7 +32,7 @@ def init_entities(scene: "NightScene"):
 
     look_triggers_size = scene.relative_size(scene.BASE_RESOLUTION[0] * 0.3, scene.BASE_RESOLUTION[1])
     side_w = look_triggers_size[0]
-    slow_w = side_w // 2
+    slow_w = side_w // 4
     fast_w = side_w - slow_w
 
     look_triggers = [
@@ -71,7 +71,7 @@ def init_entities(scene: "NightScene"):
         # RIGHT — fast (externo, na borda)
         scene_types.Entity(
             pyglet.shapes.Rectangle(
-                x=scene.BASE_RESOLUTION[0] - fast_w,
+                x=scene.window.width - fast_w,
                 y=0,
                 width=fast_w,
                 height=look_triggers_size[1],
@@ -87,7 +87,7 @@ def init_entities(scene: "NightScene"):
         # RIGHT — slow (interno)
         scene_types.Entity(
             pyglet.shapes.Rectangle(
-                x=scene.BASE_RESOLUTION[0] - fast_w - slow_w,
+                x=scene.window.width - fast_w - slow_w,
                 y=0,
                 width=slow_w,
                 height=look_triggers_size[1],
