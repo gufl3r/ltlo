@@ -1,0 +1,28 @@
+# env / editor
+.venv/
+.vscode/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+
+# build / dist
+build/
+*.spec
+
+# logs / temp
+logs/
+*.log
+*.tmp
+*.bak
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# docs
+docs/
+
+# archives / old stuff
+archive/
