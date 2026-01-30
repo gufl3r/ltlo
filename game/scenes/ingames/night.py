@@ -10,6 +10,7 @@ class NightScene(base_scene.Scene):
     def __init__(self, window: Window, save: dict) -> None:
         super().__init__(window, save)
         self.assets: dict
+        self.x: int
 
         init_system.init_vars(self)
         init_system.init_assets(self)

@@ -99,18 +99,43 @@ class Scene:
         commit_trackers: list[scene_types.CommitTracker] = []
 
         for config in configs:
+            # ---- proteção de identidade (bootstrap-safe) ----
+            needs_identity = (
+                config.relation is not None and
+                (
+                    config.self_id == 0 or
+                    config.anchor_id == 0
+                )
+            )
+
+            if needs_identity:
+                print(
+                    "[WARN] Commit skipped: entity without identity "
+                    f"(self_id={config.self_id}, anchor_id={config.anchor_id})"
+                )
+                continue
+
+            # validações estruturais (bugs reais)
             if config.relation == "behind" and not config.anchor_id:
                 raise ValueError("Invalid combination: behind relation requires anchor_id")
+
             if config.relation == "replace" and not config.self_id:
                 raise ValueError("Invalid combination: replace relation requires self_id")
+
             if config.self_id and config.relation != "replace":
                 raise ValueError("Invalid combination: self_id requires replace relation")
+
             if config.relation == "behind" and config.anchor_id == config.self_id:
                 raise ValueError("Invalid combination: cannot be behind itself")
+
+            # ---- spawn simples (não depende de identidade) ----
             if not config.relation:
-                self._entities += [config.entity_generator(None)]
+                self._entities.append(config.entity_generator(None))
                 continue
+
+            # ---- commit normal ----
             commit_trackers.append(scene_types.CommitTracker(config=config))
+
 
         new_entities = []
 
@@ -281,7 +306,7 @@ class Scene:
     # ---------- DRAW ----------
     def _draw(self) -> None:
         self.window.clear()
-
+    
         for entity in self._entities:
             entity.drawable.draw()
 

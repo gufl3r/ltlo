@@ -20,7 +20,7 @@ def init_entities(scene: "NightScene"):
     dark_room_image = scene.assets["images"]["dark_room"]
     width_multiplier = scene.BASE_RESOLUTION[1] / dark_room_image.height
     dark_room = generic_entities.image(
-        "office",
+        "dark_room",
         dark_room_image,
         (0,0),
         scene.relative_size(dark_room_image.width * width_multiplier, scene.BASE_RESOLUTION[1]),
@@ -119,5 +119,5 @@ def init_entities(scene: "NightScene"):
 def init_media(scene: "NightScene"):
     pass
 
-def init_vars(self) -> None:
-    pass
+def init_vars(scene: "NightScene") -> None:
+    scene.x = 0
