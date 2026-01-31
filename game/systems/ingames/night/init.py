@@ -4,6 +4,7 @@ import typing
 import game.entitymodels.generic as generic_entities
 import game.types.scenes as scene_types
 import pyglet
+import utils.registry.runtimeconfig as runtime_config
 
 if typing.TYPE_CHECKING:
     from game.scenes.ingames.night import NightScene
@@ -18,19 +19,19 @@ def init_assets(scene: "NightScene"):
 
 def init_entities(scene: "NightScene"):
     dark_room_image = scene.assets["images"]["dark_room"]
-    width_multiplier = scene.BASE_RESOLUTION[1] / dark_room_image.height
+    width_multiplier = runtime_config.BASE_RESOLUTION[1] / dark_room_image.height
     dark_room = generic_entities.image(
         "dark_room",
         dark_room_image,
         (0,0),
-        scene.relative_size(dark_room_image.width * width_multiplier, scene.BASE_RESOLUTION[1]),
+        scene.relative_size(dark_room_image.width * width_multiplier, runtime_config.BASE_RESOLUTION[1]),
         -1,
         None,
         False,
         ["room_movable"]
     )
 
-    look_triggers_size = scene.relative_size(scene.BASE_RESOLUTION[0] * 0.3, scene.BASE_RESOLUTION[1])
+    look_triggers_size = scene.relative_size(runtime_config.BASE_RESOLUTION[0] * 0.3, runtime_config.BASE_RESOLUTION[1])
     side_w = look_triggers_size[0]
     slow_w = side_w // 4
     fast_w = side_w - slow_w

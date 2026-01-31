@@ -2,6 +2,7 @@ import utils.save
 import typing
 import game.types.scenes as scene_types
 import pyglet
+import utils.registry.gamecapacities as game_capacities
 
 if typing.TYPE_CHECKING:
     from game.scenes.menus.settings import SettingsScene
@@ -15,7 +16,7 @@ def switch_resolution(scene: "SettingsScene", data: dict) -> None:
         return
 
     # -------- lógica --------
-    resolution_options = utils.save.RESOLUTION_OPTIONS
+    resolution_options = game_capacities.RESOLUTION_OPTIONS
     current = scene.save["settings"]["resolution"]
     current_index = resolution_options.index(current)
 

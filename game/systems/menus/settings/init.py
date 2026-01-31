@@ -2,9 +2,9 @@ import utils.path
 import utils.assets
 import typing
 import game.entitymodels.generic as generic_entities
+import game.entitymodels.menu as menu_entities
 import game.types.scenes as scene_types
 import pyglet
-import game.entitymodels.menu as menu_entities
 
 if typing.TYPE_CHECKING:
     from game.scenes.menus.settings import SettingsScene

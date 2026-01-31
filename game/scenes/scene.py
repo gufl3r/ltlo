@@ -4,16 +4,13 @@ import time
 import game.types.scenes as scene_types
 import utils.detections
 import utils.conversions
-import utils.path
 import utils.ids
-import json
 import game.entitymodels.generic as generic_entities
 import typing
+import utils.registry.runtimeconfig as runtime_config
 
 class Scene:
     FPS = 60  # default, cada tela pode sobrescrever
-    with open(utils.path.resource_path("config.json"), "r") as f:
-        BASE_RESOLUTION = json.load(f)["base_resolution"]
 
     def __init__(self, window: Window, save: dict) -> None:
         self.window = window
@@ -79,7 +76,7 @@ class Scene:
     def relative_position(self, x: int, y: int) -> tuple[int, int]:
         return utils.conversions.convert_position(
             (x, y),
-            self.BASE_RESOLUTION,
+            runtime_config.BASE_RESOLUTION,
             (self.window.width, self.window.height)
         )
     

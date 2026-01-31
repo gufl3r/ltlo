@@ -3,8 +3,11 @@ utils.libs.load()
 import pyglet
 import utils.save
 import game.mastercontroller as master_controller
+import utils.registry.registry as registry
 
 def main() -> None:
+    registry.load()
+
     save = utils.save.init_save()
     window = pyglet.window.Window(caption="LTLO")
 

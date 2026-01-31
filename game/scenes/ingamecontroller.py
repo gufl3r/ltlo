@@ -1,6 +1,6 @@
 import game.scenes.ingames.night as night_scene
 import game.scenes.ingames.final as final_scene
-import game.features.global_.loading as loading_feature
+import game.systems.global_.loading as loading_system
 from pyglet.window import Window
 
 class IngameController:
@@ -13,7 +13,7 @@ class IngameController:
     def loop(self) -> str:
         while True:
             print(f"at controller: {self.__class__.__name__}")
-            loading_feature.show(self.window)
+            loading_system.show(self.window)
             match self.scene_name:
                 case "night_scene":
                     self.scene_obj = night_scene.NightScene(self.window, self.save)

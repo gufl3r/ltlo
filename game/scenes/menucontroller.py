@@ -1,7 +1,7 @@
 import game.scenes.menus.main as main_scene
 import game.scenes.menus.settings as settings_scene
 import game.scenes.menus.credits as credits_scene
-import game.features.global_.loading as loading_feature
+import game.systems.global_.loading as loading_system
 from pyglet.window import Window
 
 class MenuController:
@@ -14,7 +14,7 @@ class MenuController:
     def loop(self) -> str:
         while True:
             print(f"at controller: {self.__class__.__name__}")
-            loading_feature.show(self.window)
+            loading_system.show(self.window)
             match self.scene_name:
                 case "main_menu_scene":
                     self.scene_obj = main_scene.MainMenuScene(self.window, self.save)

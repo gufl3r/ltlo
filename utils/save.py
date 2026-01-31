@@ -5,23 +5,10 @@ import utils.path
 import os
 import traceback
 import userpaths
-import sys
+import utils.registry.gamecapacities as game_capacities
+import utils.registry.versioninfo as version_info
 
-RESOLUTION_OPTIONS = [
-    [1280, 720],
-    [1920, 1080],
-    [2560, 1440],
-    [3840, 2160],
-]
-
-with open(utils.path.resource_path("version_info.json"), "r") as f:
-    data = json.load(f)
-    GAME_VERSION = data["version"]
-    VERSIONS_SUPPORTED = data["versions_supported"]
-    NAME_SLUG = data["name_slug"]
-    AUTHOR = data["author"]
-
-SAVE_FOLDER_PATH = f"{userpaths.get_my_documents()}/{AUTHOR}"
+SAVE_FOLDER_PATH = f"{userpaths.get_my_documents()}/{version_info.AUTHOR}"
 os.makedirs(SAVE_FOLDER_PATH, exist_ok=True)
 
 # ---------- LOGGING ----------
@@ -51,7 +38,7 @@ def _write_log(
         "timestamp_iso": now_utc.isoformat(),
         "severity": severity,
         "message": message,
-        "game_version": GAME_VERSION,
+        "game_version": version_info.GAME_VERSION,
         "errors": errors or [],
     }
 
@@ -72,10 +59,10 @@ def _write_log(
 
 def init_save() -> dict:
     try:
-        with open(f"{SAVE_FOLDER_PATH}/{NAME_SLUG}_save.json", "r", encoding="utf-8") as f:
+        with open(f"{SAVE_FOLDER_PATH}/{version_info.NAME_SLUG}_save.json", "r", encoding="utf-8") as f:
             save = json.load(f)
 
-        errors = save_valid(save)
+        errors = _validate(save)
         if errors:
             _write_log(
                 severity="error",
@@ -89,7 +76,7 @@ def init_save() -> dict:
 
     except FileNotFoundError:
         default_save = {
-            "version": GAME_VERSION,
+            "version": version_info.GAME_VERSION,
             "game": {
                 "night": 1
             },
@@ -111,7 +98,7 @@ def init_save() -> dict:
             save_snapshot=default_save
         )
 
-        with open(f"{SAVE_FOLDER_PATH}/{NAME_SLUG}_save.json", "w", encoding="utf-8") as f:
+        with open(f"{SAVE_FOLDER_PATH}/{version_info.NAME_SLUG}_save.json", "w", encoding="utf-8") as f:
             json.dump(default_save, f, indent=2)
 
         return default_save
@@ -126,7 +113,7 @@ def init_save() -> dict:
 
 
 def save_settings(save: dict) -> None:
-    errors = save_valid(save)
+    errors = _validate(save)
     if errors:
         _write_log(
             severity="error",
@@ -136,7 +123,7 @@ def save_settings(save: dict) -> None:
         )
         raise ValueError("Attempted to save an invalid save file.")
     
-    with open(f"{SAVE_FOLDER_PATH}/{NAME_SLUG}_save.json", "w", encoding="utf-8") as f:
+    with open(f"{SAVE_FOLDER_PATH}/{version_info.NAME_SLUG}_save.json", "w", encoding="utf-8") as f:
         json.dump(save, f, indent=2)
 
 
@@ -148,7 +135,7 @@ def apply_settings(save: dict, window: Window) -> None:
 
 # ---------- VALIDATION ----------
 
-def save_valid(save: dict) -> list[str]:
+def _validate(save: dict) -> list[str]:
     errors = []
 
     try:
@@ -156,7 +143,7 @@ def save_valid(save: dict) -> list[str]:
         if not all(k in save for k in ("version", "game", "settings")):
             errors.append("Main structure missing 'version', 'game' or 'settings'.")
 
-        if save.get("version") not in VERSIONS_SUPPORTED:
+        if save.get("version") not in version_info.VERSIONS_SUPPORTED:
             errors.append("Save file version is not supported.")
 
         # game
@@ -173,8 +160,8 @@ def save_valid(save: dict) -> list[str]:
         if not isinstance(settings, dict):
             errors.append("'settings' must be a dict.")
         else:
-            if settings.get("resolution") not in RESOLUTION_OPTIONS:
-                errors.append(f"Invalid resolution. Must be one of {RESOLUTION_OPTIONS}.")
+            if settings.get("resolution") not in game_capacities.RESOLUTION_OPTIONS:
+                errors.append(f"Invalid resolution. Must be one of {game_capacities.RESOLUTION_OPTIONS}.")
 
             if not isinstance(settings.get("fullscreen"), bool):
                 errors.append("'fullscreen' must be boolean.")

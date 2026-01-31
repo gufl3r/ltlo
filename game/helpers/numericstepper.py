@@ -1,5 +1,6 @@
 import typing
 import game.types.scenes as scene_types
+import utils.registry.runtimeconfig as runtime_config
 
 if typing.TYPE_CHECKING:
     from game.scenes.scene import Scene
@@ -12,9 +13,9 @@ def try_relate(scene: "Scene", i: int, entity: scene_types.Entity):
         return []
 
     if "decrease" in entity.tags:
-        target_index = i + 3
+        target_index = i + runtime_config.UI_OFFSETS["numeric_stepper"]["decrease_to_value"]
     else:
-        target_index = i - 1
+        target_index = i + runtime_config.UI_OFFSETS["numeric_stepper"]["increase_to_value"]
 
     candidate = scene._entities[target_index]
 

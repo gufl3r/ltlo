@@ -7,7 +7,7 @@ import game.types.scenes as scene_types
 DOMAIN_PREFIX = "domain:"
 
 def numeric_stepper(
-    name: str,                 # nome livre (debug / leitura humana)
+    name: str,
     value_text: str,
     position: tuple,
     size: tuple,
