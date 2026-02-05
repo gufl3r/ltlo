@@ -1,4 +1,3 @@
-import utils.path
 import utils.assets
 import typing
 import game.entitymodels.generic as generic_entities
@@ -13,8 +12,10 @@ def init_assets(scene: "NightScene"):
     scene.assets = utils.assets.asset_path_to_obj(
         images=
         [
-            utils.path.resource_path("assets/ingames/night/dark_room.png"),
-        ],
+            "assets/ingames/night/dark_room.png",
+            "assets/ingames/night/lamp_on.png",
+            "assets/ingames/night/lamp_off.png",
+        ]
     )
 
 def init_entities(scene: "NightScene"):
@@ -35,9 +36,7 @@ def init_entities(scene: "NightScene"):
     side_w = look_triggers_size[0]
     slow_w = side_w // 4
     fast_w = side_w - slow_w
-
     look_triggers = [
-        # LEFT — fast (externo, na borda)
         scene_types.Entity(
             pyglet.shapes.Rectangle(
                 x=0,
@@ -53,7 +52,6 @@ def init_entities(scene: "NightScene"):
             tags=["look_fast", "look_left"]
         ),
 
-        # LEFT — slow (interno)
         scene_types.Entity(
             pyglet.shapes.Rectangle(
                 x=fast_w,
@@ -69,7 +67,6 @@ def init_entities(scene: "NightScene"):
             tags=["look_slow", "look_left"]
         ),
 
-        # RIGHT — fast (externo, na borda)
         scene_types.Entity(
             pyglet.shapes.Rectangle(
                 x=scene.window.width - fast_w,
@@ -85,7 +82,6 @@ def init_entities(scene: "NightScene"):
             tags=["look_fast", "look_right"]
         ),
 
-        # RIGHT — slow (interno)
         scene_types.Entity(
             pyglet.shapes.Rectangle(
                 x=scene.window.width - fast_w - slow_w,
@@ -101,9 +97,22 @@ def init_entities(scene: "NightScene"):
             tags=["look_slow", "look_right"]
         ),
     ]
+
+    lamp_drawable = pyglet.sprite.Sprite(scene.assets["images"]["lamp_off"])
+    lamp_drawable.x = scene.relative_coordinate(dark_room_image.width * width_multiplier, "x") - lamp_drawable.width
+    lamp = scene_types.Entity(
+        lamp_drawable,
+        name="lamp",
+        ticks_left=-1,
+        interaction_name="toggle_lamp",
+        hud=False,
+        tags=["room_movable"],
+        states=[scene_types.State("turned_on", {"value": False})]
+    )
     
     initial_entities = [
         dark_room,
+        lamp,
         *look_triggers
     ]
 

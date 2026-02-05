@@ -1,19 +1,17 @@
 import json
 import utils.path
 
-AUTHOR: str = ""
-NAME_SLUG: str = ""
-GAME_VERSION: str = ""
-VERSIONS_SUPPORTED: list[str] = []
+AUTHOR = ""
+NAME_SLUG = ""
+GAME_VERSION = ""
+VERSIONS_SUPPORTED = []
 
-
-class VersionInfoError(RuntimeError):
-    pass
+_LOADED = False
 
 
 def _validate(data: dict) -> None:
     if not isinstance(data, dict):
-        raise VersionInfoError("versioninfo.json must be an object")
+        raise TypeError("gameinfo.json must be an object")
 
     required_keys = {
         "author": str,
@@ -24,28 +22,31 @@ def _validate(data: dict) -> None:
 
     for key, expected_type in required_keys.items():
         if key not in data:
-            raise VersionInfoError(f"Missing key '{key}' in versioninfo.json")
+            raise KeyError(f"Missing key '{key}' in gameinfo.json")
 
         if not isinstance(data[key], expected_type):
-            raise VersionInfoError(
+            raise TypeError(
                 f"Key '{key}' must be {expected_type.__name__}"
             )
 
     if not data["versions_supported"]:
-        raise VersionInfoError("versions_supported cannot be empty")
+        raise ValueError("versions_supported cannot be empty")
 
     if data["version"] not in data["versions_supported"]:
-        raise VersionInfoError(
+        raise ValueError(
             "Current version must be listed in versions_supported"
         )
 
     for v in data["versions_supported"]:
         if not isinstance(v, str):
-            raise VersionInfoError("versions_supported must contain only strings")
+            raise TypeError("versions_supported must contain only strings")
 
 
-def load(file_name: str = "versioninfo.json") -> None:
-    global AUTHOR, NAME_SLUG, GAME_VERSION, VERSIONS_SUPPORTED
+def load(file_name: str = "gameinfo.json") -> None:
+    global AUTHOR, NAME_SLUG, GAME_VERSION, VERSIONS_SUPPORTED, _LOADED
+
+    if _LOADED:
+        return
 
     path = utils.path.resource_path(file_name)
 
@@ -58,3 +59,5 @@ def load(file_name: str = "versioninfo.json") -> None:
     NAME_SLUG = data["name_slug"]
     GAME_VERSION = data["version"]
     VERSIONS_SUPPORTED = list(data["versions_supported"])
+
+    _LOADED = True

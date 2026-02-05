@@ -6,7 +6,7 @@ import os
 import traceback
 import userpaths
 import utils.registry.gamecapacities as game_capacities
-import utils.registry.versioninfo as version_info
+import utils.registry.gameinfo as version_info
 
 SAVE_FOLDER_PATH = f"{userpaths.get_my_documents()}/{version_info.AUTHOR}"
 os.makedirs(SAVE_FOLDER_PATH, exist_ok=True)

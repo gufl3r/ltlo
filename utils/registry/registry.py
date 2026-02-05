@@ -1,5 +1,5 @@
 import utils.registry.runtimeconfig as runtime_config
-import utils.registry.versioninfo as version_info
+import utils.registry.gameinfo as version_info
 import utils.registry.gamecapacities as game_capacities
 import time
 

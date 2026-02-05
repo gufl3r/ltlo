@@ -8,6 +8,7 @@ import utils.ids
 import game.entitymodels.generic as generic_entities
 import typing
 import utils.registry.runtimeconfig as runtime_config
+import dataclasses
 
 class Scene:
     FPS = 60  # default, cada tela pode sobrescrever
@@ -131,7 +132,7 @@ class Scene:
                 continue
 
             # ---- commit normal ----
-            commit_trackers.append(scene_types.CommitTracker(config=config))
+            commit_trackers.append(scene_types.CommitTracker(config))
 
 
         new_entities = []
@@ -268,9 +269,9 @@ class Scene:
     # ------ AUDIO MANAGER ------
 
     def _tick_audio(self):
-        if self.audio_player.source:
-            if self.audio_player.time > self.audio_player.source.duration:
-                self.after_audio(self.audio_player)
+        if self.audio_player.source and self.audio_player.time > self.audio_player.source.duration:
+            self.audio_player.next_source()
+            self.after_audio(self.audio_player)
 
     # ------ MEDIA MANAGER ------
 
@@ -336,15 +337,11 @@ class Scene:
             ticks_to_remove = entity.ticks_left != -1
             entity_relations = self.resolve_pending_relations(i, entity) if entity.id != 0 else entity.relations
             entity_id = entity.id if entity.id != 0 else utils.ids.generate_id()
-            new_entity = scene_types.Entity(
-                drawable=entity.drawable,
-                name=entity.name,
-                ticks_left=entity.ticks_left-ticks_to_remove,
-                interaction_name=entity.interaction_name,
-                hud=entity.hud,
-                tags=entity.tags,
+            new_entity = dataclasses.replace(
+                entity,
+                ticks_left=entity.ticks_left - ticks_to_remove,
                 id=entity_id,
-                relations=entity_relations
+                relations=entity_relations,
             )
 
             new_entities[new_entity.hud].append(new_entity)

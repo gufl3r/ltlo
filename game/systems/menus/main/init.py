@@ -5,7 +5,7 @@ import game.entitymodels.generic as generic_entities
 import game.types.scenes as scene_types
 import pyglet
 import json
-import utils.registry.versioninfo as version_info
+import utils.registry.gameinfo as version_info
 
 if typing.TYPE_CHECKING:
     from game.scenes.menus.main import MainMenuScene
@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
 def init_assets(scene: "MainMenuScene"):
     scene.assets = utils.assets.asset_path_to_obj(
         images=[
-            utils.path.resource_path("assets/menus/main/bg.png")
+            "assets/menus/main/bg.png"
         ]
     )
 

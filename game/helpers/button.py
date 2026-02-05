@@ -15,7 +15,7 @@ def try_relate(scene: "Scene", i: int, entity: scene_types.Entity):
     candidate = scene._entities[i + runtime_config.UI_OFFSETS["button"]["rect_to_label"]]
 
     return [
-        scene_types.EntityRelation(
+        scene_types.Relation(
             name="button",
             related_to=candidate.id
         )

@@ -16,9 +16,14 @@ class CommitTracker:
     done: bool = False
 
 @dataclasses.dataclass
-class EntityRelation:
+class Relation:
     name: str
     related_to: int
+
+@dataclasses.dataclass
+class State:
+    name: str
+    data: dict
 
 @dataclasses.dataclass
 class Entity:
@@ -29,4 +34,5 @@ class Entity:
     hud: bool
     id: int = 0
     tags: list[str] = dataclasses.field(default_factory=list)
-    relations: list[EntityRelation] = dataclasses.field(default_factory=list)
+    states: list[State] = dataclasses.field(default_factory=list)
+    relations: list[Relation] = dataclasses.field(default_factory=list)

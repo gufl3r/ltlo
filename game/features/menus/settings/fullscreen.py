@@ -1,3 +1,4 @@
+import dataclasses
 import pyglet
 import typing
 import game.types.scenes as scene_types
@@ -18,35 +19,13 @@ def toggle_fullscreen(scene: "SettingsScene", data: dict) -> None:
 
     new_color = (0, 255, 0) if enabled else (255, 0, 0)
 
-    def replace_button(entity):
-        drawable = entity.drawable
+    def replace_button(entity: scene_types.Entity):
+        entity.drawable.color = new_color
 
-        # Label não muda (texto fixo)
-        if isinstance(drawable, pyglet.text.Label):
-            return entity
-
-        # Retângulo muda de cor
-        if isinstance(drawable, pyglet.shapes.RoundedRectangle):
-            new_rect = pyglet.shapes.RoundedRectangle(
-                x=drawable.x,
-                y=drawable.y,
-                width=drawable.width,
-                height=drawable.height,
-                radius=drawable.radius,
-                color=new_color,
-            )
-
-            return scene_types.Entity(
-                drawable=new_rect,
-                name=entity.name,
-                ticks_left=entity.ticks_left,
-                interaction_name=entity.interaction_name,
-                hud=entity.hud,
-                tags=entity.tags,
-                id=entity.id,
-            )
-
-        return entity
+        return dataclasses.replace(
+            entity,
+            drawable=entity.drawable,
+        )
 
     scene.commit_entities_update_by_id([
         scene_types.EntitiesListByIdConfig(

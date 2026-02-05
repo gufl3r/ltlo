@@ -1,3 +1,4 @@
+import dataclasses
 import typing
 import utils.detections
 import game.types.scenes as scene_types
@@ -63,18 +64,11 @@ def generate_natural_logic(scene: "NightScene"):
 
     # -------- apply (mundo move ao contrário da câmera) --------
     def apply_look_offset(entity: scene_types.Entity):
-        drawable = entity.drawable
-        drawable.x -= real_offset_x
+        entity.drawable.x -= real_offset_x
 
-        return scene_types.Entity(
-            drawable=drawable,
-            name=entity.name,
-            ticks_left=entity.ticks_left,
-            interaction_name=entity.interaction_name,
-            hud=entity.hud,
-            tags=entity.tags,
-            id=entity.id,
-            relations=entity.relations,
+        return dataclasses.replace(
+            entity,
+            drawable=entity.drawable,
         )
     
     scene.commit_entities_update_by_id([

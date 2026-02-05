@@ -1,3 +1,4 @@
+import dataclasses
 import pyglet
 import typing
 import game.types.scenes as scene_types
@@ -55,33 +56,12 @@ def numeric_stepper_change(scene: "SettingsScene", data: dict):
         return
 
     def replace_value_label(entity: scene_types.Entity):
-        drawable = entity.drawable
+        entity.drawable.text = new_text
 
-        if isinstance(drawable, pyglet.text.Label):
-            new_label = pyglet.text.Label(
-                text=new_text,
-                x=drawable.x,
-                y=drawable.y,
-                width=drawable.width,
-                height=drawable.height,
-                font_size=drawable.font_size,
-                anchor_x=drawable.anchor_x,
-                anchor_y=drawable.anchor_y,
-                color=drawable.color,
-            )
-
-            return scene_types.Entity(
-                drawable=new_label,
-                name=entity.name,
-                ticks_left=entity.ticks_left,
-                interaction_name=entity.interaction_name,
-                hud=entity.hud,
-                tags=entity.tags,
-                id=entity.id,
-                relations=entity.relations,
-            )
-
-        return entity
+        return dataclasses.replace(
+            entity,
+            drawable=entity.drawable,
+        )
 
     scene.commit_entities_update_by_id([
         scene_types.EntitiesListByIdConfig(

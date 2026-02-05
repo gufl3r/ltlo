@@ -5,7 +5,6 @@ RESOLUTION_OPTIONS = []
 
 _LOADED = False
 
-
 def load(file_name: str = "gamecapacities.json") -> None:
     global RESOLUTION_OPTIONS, _LOADED
 

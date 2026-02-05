@@ -20,7 +20,7 @@ def try_relate(scene: "Scene", i: int, entity: scene_types.Entity):
     candidate = scene._entities[target_index]
 
     return [
-        scene_types.EntityRelation(
+        scene_types.Relation(
             name="numeric_stepper",
             related_to=candidate.id
         )
