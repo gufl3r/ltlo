@@ -12,6 +12,7 @@ import dataclasses
 
 class Scene:
     FPS = 60  # default, cada tela pode sobrescrever
+    ANIMATION_LOOP_TAG = "animation_loop"
 
     def __init__(self, window: Window, save: dict) -> None:
         self.window = window
@@ -143,7 +144,7 @@ class Scene:
                 if commit_tracker.done:
                     continue
                 config: scene_types.EntitiesListByIdConfig = commit_tracker.config
-                if entity.id == config.anchor_id:
+                if entity.id_ == config.anchor_id:
                     commit_tracker.found_anchor = True
                     if config.relation == "behind":
                         new_entities.append(config.entity_generator(entity))
@@ -159,7 +160,7 @@ class Scene:
                         no_match = False
                         break
 
-                elif entity.id == config.self_id:
+                elif entity.id_ == config.self_id:
                     new_entities.append(config.entity_generator(entity))
                     commit_tracker.found_self = True
                     commit_tracker.done = True
@@ -182,7 +183,7 @@ class Scene:
 
     def entity_by_id(self, id_: int):
         for entity in self._entities:
-            if entity.id == id_:
+            if entity.id_ == id_:
                 return entity
             
     def entities_by_name(self, name: str):
@@ -228,7 +229,7 @@ class Scene:
                                 "name": "interaction",
                                 "data": {
                                     "interaction_name": entity.interaction_name,
-                                    "entity_id": entity.id
+                                    "entity_id": entity.id_
                                 }
                             })
                             break
@@ -298,7 +299,7 @@ class Scene:
     def process_natural(self, logic) -> str | None:
         pass
 
-    def resolve_pending_relations(self, i: int, entity: scene_types.Entity):
+    def resolve_initial_relations(self, i: int, entity: scene_types.Entity):
         return entity.relations
 
     # ---------- DRAW ----------
@@ -325,6 +326,25 @@ class Scene:
             return result
         self._logic_queue.clear()
 
+    # ------- ANIMATION ENTITY -------
+
+    def _has_on_animation_end(self, drawable) -> bool:
+        stack = getattr(drawable, "_event_stack", None)
+        if not stack:
+            return False
+
+        for level in stack:
+            if "on_animation_end" in level:
+                return True
+
+        return False
+
+    def _set_animation_entity_policy(self, entity):
+        @entity.drawable.event
+        def on_animation_end(entity=entity):
+            if self.ANIMATION_LOOP_TAG not in entity.tags:
+                entity.drawable.frame_index = len(entity.drawable.image.frames)
+
     # ------- UPDATE ENTITIES -------
 
     def _update_entities(self) -> None:
@@ -333,15 +353,15 @@ class Scene:
         for i, entity in enumerate(self._entities):
             if entity.ticks_left == 0:
                 continue
-
-            ticks_to_remove = entity.ticks_left != -1
-            entity_relations = self.resolve_pending_relations(i, entity) if entity.id != 0 else entity.relations
-            entity_id = entity.id if entity.id != 0 else utils.ids.generate_id()
+            
+            if "animated" in entity.tags and not self._has_on_animation_end(entity.drawable):
+                self._set_animation_entity_policy(entity)
             new_entity = dataclasses.replace(
                 entity,
-                ticks_left=entity.ticks_left - ticks_to_remove,
-                id=entity_id,
-                relations=entity_relations,
+                ticks_left=entity.ticks_left-1 if entity.ticks_left != -1 else entity.ticks_left, # decreases if not set as permanent
+                id_=utils.ids.generate_id() if entity.ticks_alive == 0 else entity.id_,
+                relations=self.resolve_initial_relations(i, entity) if entity.ticks_alive == 1 else entity.relations,
+                ticks_alive=entity.ticks_alive+1,
             )
 
             new_entities[new_entity.hud].append(new_entity)
@@ -365,12 +385,12 @@ class Scene:
 
                 # erro relativo do ciclo
                 correction = elapsed / 1.0  # 1.0s é o alvo
-                frame_time /= correction    # ajusta o sleep
+                frame_time /= correction
 
-                # reset do ciclo
                 self.ticks_in_cycle = 0
-                self.current_cycle += not self.video_player.source
                 cycle_start = now
+                if not self.video_player.source:
+                    self.current_cycle += 1
 
             self._process_events()
             if not self.video_player.source:

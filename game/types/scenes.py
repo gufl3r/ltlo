@@ -32,7 +32,8 @@ class Entity:
     ticks_left: int
     interaction_name: str | None
     hud: bool
-    id: int = 0
+    id_: int = 0
+    ticks_alive: int = 0
     tags: list[str] = dataclasses.field(default_factory=list)
     states: list[State] = dataclasses.field(default_factory=list)
     relations: list[Relation] = dataclasses.field(default_factory=list)

@@ -1,1 +1,1 @@
-{"render": {"base_resolution": [1280, 720]}, "ui": {"offsets": {"numeric_stepper": {"decrease_to_value": 1, "increase_to_value": -3}, "button": {"rect_to_label": 1}}}}
+{"render": {"base_resolution": [1280, 720]}, "ui": {"offsets": {"numeric_stepper": {"decrease_to_value": 3, "increase_to_value": -1}, "button": {"rect_to_label": 1}}}}

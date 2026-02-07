@@ -8,51 +8,54 @@ def build(cfg: dict):
         rect_idx = None
         label_idx = None
 
-        for i, ent in enumerate(entities):
-            obj = ent.drawable  # ajuste se o atributo tiver outro nome
+        for i, entity in enumerate(entities):
+            tags = entity.tags
 
-            if rect_idx is None and isinstance(obj, pyglet.shapes.RoundedRectangle):
-                rect_idx = i
-
-            if label_idx is None and isinstance(obj, pyglet.text.Label):
-                label_idx = i
+            if "button_rect" in tags:
+                if rect_idx is None:
+                    rect_idx = i
+            if "button_label" in tags:
+                if label_idx is None:
+                    label_idx = i
 
             if rect_idx is not None and label_idx is not None:
                 break
 
         if rect_idx is None or label_idx is None:
-            raise ValueError("rect ou label nao encontrado na lista")
+            raise ValueError("Incomplete button object")
 
         return {
-                "rect_to_label": abs(rect_idx - label_idx)
+            "rect_to_label": label_idx - rect_idx
         }
+    
     def numeric_stepper_distances(entities: list) -> dict:
         decrease_idx = None
-        value_idx = None
         increase_idx = None
+        value_idx = None
 
-        for i, ent in enumerate(entities):
-            tags = getattr(ent, "tags", [])
+        for i, entity in enumerate(entities):
+            tags = entity.tags
 
-            if "numeric_stepper" not in tags:
-                continue
+            if "decrease" in tags:
+                if decrease_idx is None:
+                    decrease_idx = i
+            elif "increase" in tags:
+                if increase_idx is None:
+                    increase_idx = i
+            elif "button_label" in tags:
+                if value_idx is None:
+                    value_idx = i
 
-            if "decrease" in tags and decrease_idx is None:
-                decrease_idx = i
-            elif "increase" in tags and increase_idx is None:
-                increase_idx = i
-            elif value_idx is None:
-                value_idx = i
-
-            if decrease_idx is not None and value_idx is not None and increase_idx is not None:
-                break
-
-        if decrease_idx is None or value_idx is None or increase_idx is None:
-            raise ValueError("numeric_stepper incompleto na lista de entidades")
+        if (
+            decrease_idx is None
+            or increase_idx is None
+            or value_idx is None
+        ):
+            raise ValueError("Incomplete numeric stepper object")
 
         return {
-                "decrease_to_value": value_idx - decrease_idx,
-                "increase_to_value": value_idx - increase_idx,
+            "decrease_to_value": value_idx - decrease_idx,
+            "increase_to_value": value_idx - increase_idx,
         }
     new_cfg = copy.deepcopy(cfg)
     button = generic_entities.button("test","test",(100,100),(100,100),(100,100,100),(100,100,100,100),100,100,None)

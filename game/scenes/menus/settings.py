@@ -24,11 +24,11 @@ class SettingsScene(base_scene.Scene):
     def process_natural(self, logic):
         return process_logic_system.process_natural(self, logic)
     
-    def resolve_pending_relations(self, i:int, entity: scene_types.Entity):
+    def resolve_initial_relations(self, i:int, entity: scene_types.Entity):
         relations = []
         relations += numeric_stepper_helper.try_relate(self, i, entity)
         relations += button_helper.try_relate(self, i, entity)
 
         if relations:
             return relations
-        return super().resolve_pending_relations(i, entity)
+        return super().resolve_initial_relations(i, entity)

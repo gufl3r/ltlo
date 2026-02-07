@@ -12,8 +12,8 @@ class NightScene(base_scene.Scene):
         self.assets: dict
         self.x: int
 
-        init_system.init_vars(self)
         init_system.init_assets(self)
+        init_system.init_vars(self)
         init_system.init_entities(self)
         init_system.init_media(self)
 

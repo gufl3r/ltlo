@@ -73,7 +73,7 @@ def generate_natural_logic(scene: "NightScene"):
     
     scene.commit_entities_update_by_id([
         scene_types.EntitiesListByIdConfig(
-            self_id=entity.id,
+            self_id=entity.id_,
             relation="replace",
             entity_generator=apply_look_offset,
         )

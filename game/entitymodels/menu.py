@@ -6,6 +6,9 @@ import game.types.scenes as scene_types
 
 DOMAIN_PREFIX = "domain:"
 
+def _normalize_list(list_: list | None) -> list:
+    return list_ if list_ is not None else []
+
 def numeric_stepper(
     name: str,
     value_text: str,
@@ -18,6 +21,7 @@ def numeric_stepper(
     tags: list[str],
     hud: bool = True,
     gap: int = 6,
+    states: list[scene_types.State] | None = None
 ) -> list[scene_types.Entity]:
 
     # -------- validação do domínio --------
@@ -26,19 +30,11 @@ def numeric_stepper(
 
     if len(domain_tags) != 1:
         raise ValueError(
-            f"numeric_stepper requires exactly ONE '{DOMAIN_PREFIX}<id>' tag "
+            f"numeric_stepper requires exactly ONE '{DOMAIN_PREFIX}<domain>' tag "
             f"(got {domain_tags})"
         )
 
     domain_tag = domain_tags[0]
-
-    # impede lixo extra
-    if len(tags) != 1:
-        extra = [t for t in tags if t != domain_tag]
-        raise ValueError(
-            f"Invalid extra tags for numeric_stepper: {extra}. "
-            f"Only '{DOMAIN_PREFIX}<id>' is allowed."
-        )
 
     # -------- layout --------
     x, y = position

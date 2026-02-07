@@ -2,8 +2,8 @@ import pyglet as pyglet
 import game.types.scenes as scene_types
 
 
-def _normalize_tags(tags: list[str] | None) -> list[str]:
-    return tags if tags is not None else []
+def _normalize_list(list_: list | None) -> list:
+    return list_ if list_ is not None else []
 
 
 def button(
@@ -18,10 +18,12 @@ def button(
     interaction_name: str | None,
     hud: bool = True,
     text_offset: tuple = (0, 0),
-    tags: list[str] | None = None
+    tags: list[str] | None = None,
+    states: list[scene_types.State] | None = None
 ) -> list[scene_types.Entity]:
 
-    tags = _normalize_tags(tags)
+    tags = _normalize_list(tags)
+    states = _normalize_list(states)
 
     x, y = position
     w, h = size
@@ -55,7 +57,8 @@ def button(
             duration,
             interaction_name,
             hud,
-            tags=tags + ["button"]
+            tags=tags + ["button_rect"],
+            states=states
         ),
         scene_types.Entity(
             label,
@@ -63,7 +66,8 @@ def button(
             duration,
             None,
             hud,
-            tags=tags
+            tags=tags + ["button_label"],
+            states=states
         )
     ]
 
@@ -75,10 +79,12 @@ def image(
     duration: int,
     interaction_name: str | None,
     hud: bool,
-    tags: list[str] | None = None
+    tags: list[str] | None = None,
+    states: list[scene_types.State] | None = None
 ) -> scene_types.Entity:
 
-    tags = _normalize_tags(tags)
+    tags = _normalize_list(tags)
+    states = _normalize_list(states)
 
     x, y = position
     w, h = size
@@ -93,11 +99,12 @@ def image(
         duration,
         interaction_name,
         hud,
-        tags=tags
+        tags=tags,
+        states=states
     )
 
 
-def animation(
+def animated(
     name: str,
     animation: pyglet.image.animation.Animation,
     position: tuple,
@@ -105,10 +112,12 @@ def animation(
     duration: int,
     interaction_name: str | None,
     hud: bool,
-    tags: list[str] | None = None
+    tags: list[str] | None = None,
+    states: list[scene_types.State] | None = None
 ) -> scene_types.Entity:
 
-    tags = _normalize_tags(tags)
+    tags = _normalize_list(tags)
+    states = _normalize_list(states)
 
     x, y = position
     w, h = size
@@ -123,7 +132,8 @@ def animation(
         duration,
         interaction_name,
         hud,
-        tags=tags
+        tags=tags + ["animated"],
+        states=states
     )
 
 
@@ -132,10 +142,12 @@ def keyboard_listener(
     key_symbol: int,
     interaction_name: str,
     duration: int = -1,
-    tags: list[str] | None = None
+    tags: list[str] | None = None,
+    states: list[scene_types.State] | None = None
 ) -> scene_types.Entity:
 
-    tags = _normalize_tags(tags)
+    tags = _normalize_list(tags)
+    states = _normalize_list(states)
 
     rectangle = pyglet.shapes.Rectangle(
         x=0,
@@ -151,7 +163,8 @@ def keyboard_listener(
         duration,
         f"{key_symbol}_{interaction_name}",
         False,
-        tags=tags
+        tags=tags,
+        states=states
     )
 
 
@@ -161,7 +174,7 @@ def layer_anchor(
     tags: list[str] | None = None
 ) -> scene_types.Entity:
 
-    tags = _normalize_tags(tags)
+    tags = _normalize_list(tags)
 
     rectangle = pyglet.shapes.Rectangle(0, 0, 0, 0, color=(0, 0, 0))
 

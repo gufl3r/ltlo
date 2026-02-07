@@ -17,11 +17,11 @@ def try_relate(scene: "Scene", i: int, entity: scene_types.Entity):
     else:
         target_index = i + runtime_config.UI_OFFSETS["numeric_stepper"]["increase_to_value"]
 
-    candidate = scene._entities[target_index]
+    value_label = scene._entities[target_index]
 
     return [
         scene_types.Relation(
             name="numeric_stepper",
-            related_to=candidate.id
+            related_to=value_label.id_
         )
     ]

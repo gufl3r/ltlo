@@ -12,13 +12,14 @@ def toggle_lamp(scene: "NightScene", logic_data: dict):
         turned_on = not state.data["value"]
         states = entity.states.copy()
         states[index] = scene_types.State("turned_on", {"value": turned_on})
-        source = scene.assets["images"]["lamp_off"]
+        source = scene.assets["animations"]["lamp_off"]
         if turned_on:
-            source = scene.assets["images"]["lamp_on"]
+            source = scene.assets["animations"]["lamp_on"]
         return dataclasses.replace(
             entity,
-            drawable=pyglet.sprite.Sprite(source, x=entity.drawable.x),
+            drawable=pyglet.sprite.Sprite(source, x=entity.drawable.x, y=entity.drawable.y),
             states=states,
+            tags=entity.tags if scene.ANIMATION_LOOP_TAG in entity.tags else entity.tags + [scene.ANIMATION_LOOP_TAG]
         )
     
     lamp_entity_id: int = logic_data["entity_id"]

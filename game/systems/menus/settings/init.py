@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
 def init_assets(scene: "SettingsScene"):
     scene.assets = utils.assets.asset_path_to_obj(
         images=[
-            "assets/menus/main/bg.png"
+            "assets/menus/settings/bg.png"
         ]
     )
 
