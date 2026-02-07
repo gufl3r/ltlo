@@ -339,11 +339,16 @@ class Scene:
 
         return False
 
-    def _set_animation_entity_policy(self, entity):
-        @entity.drawable.event
-        def on_animation_end(entity=entity):
-            if self.ANIMATION_LOOP_TAG not in entity.tags:
-                entity.drawable.frame_index = len(entity.drawable.image.frames)
+    def _tick_animation(self, entity: scene_types.Entity):
+        animation_pause_state = next(state for state in entity.states if state.name == "_animation_pause_frame_index")
+        animation_pause_frame_index = animation_pause_state.data["value"]
+        if animation_pause_frame_index != -1:
+            entity.drawable.frame_index = animation_pause_frame_index
+        if not self._has_on_animation_end(entity.drawable):
+            @entity.drawable.event
+            def on_animation_end(entity=entity):
+                if self.ANIMATION_LOOP_TAG not in entity.tags:
+                    entity.drawable.frame_index = len(entity.drawable.image.frames)-1
 
     # ------- UPDATE ENTITIES -------
 
@@ -354,8 +359,8 @@ class Scene:
             if entity.ticks_left == 0:
                 continue
             
-            if "animated" in entity.tags and not self._has_on_animation_end(entity.drawable):
-                self._set_animation_entity_policy(entity)
+            if "animated" in entity.tags:
+                self._tick_animation(entity)
             new_entity = dataclasses.replace(
                 entity,
                 ticks_left=entity.ticks_left-1 if entity.ticks_left != -1 else entity.ticks_left, # decreases if not set as permanent

@@ -133,7 +133,7 @@ def animated(
         interaction_name,
         hud,
         tags=tags + ["animated"],
-        states=states
+        states=states + [scene_types.State("_animation_pause_frame_index", {"value": -1})]
     )
 
 
