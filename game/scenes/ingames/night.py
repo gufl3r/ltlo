@@ -3,6 +3,7 @@ import game.scenes.scene as base_scene
 import game.systems.ingames.night.init as init_system
 import game.systems.ingames.night.processlogic as process_logic_system
 import game.features.ingames.night.sight as sight_feature
+import game.features.ingames.night.blanket as blanket_feature
 
 class NightScene(base_scene.Scene):
     FPS = 60
@@ -19,6 +20,7 @@ class NightScene(base_scene.Scene):
 
     def generate_natural_logic(self) -> None:
         sight_feature.generate_natural_logic(self)
+        blanket_feature.generate_natural_logic(self)
 
     def after_video(self, player) -> None:
         super().after_video(player)
@@ -28,6 +30,9 @@ class NightScene(base_scene.Scene):
 
     def process_interaction(self, logic_data):
         return process_logic_system.process_interaction(self, logic_data)
+    
+    def process_release_interaction(self, logic_data):
+        return process_logic_system.process_release_interaction(self, logic_data)
     
     def process_natural(self, logic):
         return process_logic_system.process_natural(self, logic)

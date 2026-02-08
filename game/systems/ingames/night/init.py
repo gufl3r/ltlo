@@ -107,7 +107,7 @@ def init_entities(scene: "NightScene"):
     lamp = generic_entities.animated(
         name="lamp",
         animation=lamp_asset,
-        position=(scene.relative_coordinate(dark_room_asset.width * width_multiplier, "x") - lamp_asset.get_max_width(), 0),
+        position=(scene.relative_axis_value(dark_room_asset.width * width_multiplier, "x") - lamp_asset.get_max_width(), 0),
         size=(lamp_asset.get_max_width(), lamp_asset.get_max_height()),
         duration=-1,
         interaction_name="toggle_lamp",
@@ -115,10 +115,22 @@ def init_entities(scene: "NightScene"):
         tags=["room_movable"],
         states=[scene_types.State("turned_on", {"value": False})]
     )
+
+    blanket = generic_entities.animated(
+        name="blanket",
+        animation=scene.assets["animations"]["blanket"],
+        position=(0,-scene.save["settings"]["resolution"][1]),
+        size=tuple(scene.save["settings"]["resolution"]),
+        duration=-1,
+        interaction_name="use_blanket",
+        hud=True,
+        states=[scene_types.State("held", {"value": False})]
+    )
     
     initial_entities = [
         dark_room,
         lamp,
+        blanket,
         *look_triggers
     ]
 

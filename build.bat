@@ -4,8 +4,9 @@ pyinstaller --onefile ^
   --distpath build ^
   --workpath build\_work ^
   --add-data "assets;assets" ^
-  --add-data "version_info.json;." ^
-  --add-data "config.json;." ^
   --add-data "libs;libs" ^
+  --add-data "gameinfo.json;." ^
+  --add-data "gamecapacities.json;." ^
+  --add-data "runtimeconfig.json;." ^
   --name leavethelightoff ^
   main.py

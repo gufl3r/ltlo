@@ -5,7 +5,7 @@ import game.entitymodels.generic as generic_entities
 import game.types.scenes as scene_types
 import pyglet
 import json
-import utils.registry.gameinfo as version_info
+import utils.registry.gameinfo as game_info
 
 if typing.TYPE_CHECKING:
     from game.scenes.menus.main import MainMenuScene
@@ -42,13 +42,13 @@ def init_entities(scene: "MainMenuScene"):
     # ---------- VERSION LABEL ----------
     version_label = scene_types.Entity(
         pyglet.text.Label(
-            version_info.GAME_VERSION,
+            game_info.GAME_VERSION,
             x=scene.window.width - 12,
             y=12,
             anchor_x="right",
             anchor_y="bottom",
             font_size=version_font_size,
-            color=(255, 255, 255, 140)
+            color=(255, 255, 255, 30)
         ),
         "version_label",
         -1,

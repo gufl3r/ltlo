@@ -9,7 +9,6 @@ if typing.TYPE_CHECKING:
 FAST_LOOK = 12
 SLOW_LOOK = 6
 
-
 def generate_natural_logic(scene: "NightScene"):
     look_offset_x = 0
 
@@ -25,7 +24,7 @@ def generate_natural_logic(scene: "NightScene"):
             continue
 
         look_strength = FAST_LOOK if "look_fast" in entity.tags else SLOW_LOOK
-        look_offset_x = int(scene.relative_coordinate(look_strength, "x"))
+        look_offset_x = scene.relative_axis_value(look_strength, "x")
 
         # direção lógica da câmera
         if "look_left" in entity.tags:
@@ -44,15 +43,11 @@ def generate_natural_logic(scene: "NightScene"):
     viewport_width = scene.window.width
 
     max_scene_x = room_width - viewport_width
-    if max_scene_x < 0:
-        max_scene_x = 0
 
     desired_scene_x = current_scene_x + look_offset_x
     clamped_scene_x = sorted((0, desired_scene_x, max_scene_x))[1]
 
     real_offset_x = clamped_scene_x - current_scene_x
-    if not real_offset_x:
-        return
 
     # atualiza posição lógica da câmera
     scene.x = clamped_scene_x
@@ -64,18 +59,25 @@ def generate_natural_logic(scene: "NightScene"):
 
     # -------- apply (mundo move ao contrário da câmera) --------
     def apply_look_offset(entity: scene_types.Entity):
-        entity.drawable.x -= real_offset_x
+        if entity.name == "dark_room":
+            entity.drawable.x = -scene.x # force room x in case its commit is skipped
+        else:
+            entity.drawable.x -= real_offset_x
 
         return dataclasses.replace(
             entity,
             drawable=entity.drawable,
         )
     
-    scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
-            self_id=entity.id_,
-            relation="replace",
-            entity_generator=apply_look_offset,
-        )
-        for entity in targets
-    ])
+    failed_commits = scene.commit_entities_update_by_id([
+            scene_types.EntitiesListByIdConfig(
+                self_id=entity.id_,
+                relation="replace",
+                entity_generator=apply_look_offset,
+            )
+            for entity in targets
+        ])
+
+    if failed_commits:
+        scene.x -= real_offset_x
+        print(f"[DEBUG] Sight logic reverted due to failed commits.")

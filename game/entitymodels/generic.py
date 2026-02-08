@@ -47,7 +47,8 @@ def button(
         anchor_x="center",
         anchor_y="center",
         color=text_color,
-        font_size=text_size
+        font_size=text_size,
+        weight="medium"
     )
 
     return [

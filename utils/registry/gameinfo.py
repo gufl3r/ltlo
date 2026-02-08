@@ -8,7 +8,6 @@ VERSIONS_SUPPORTED = []
 
 _LOADED = False
 
-
 def _validate(data: dict) -> None:
     if not isinstance(data, dict):
         raise TypeError("gameinfo.json must be an object")

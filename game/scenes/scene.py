@@ -41,6 +41,13 @@ class Scene:
             })
 
         @self.window.event
+        def on_mouse_release(x, y, button, modifiers):
+            self._event_queue.append({
+                "name": "mouse_release",
+                "data": {"position": (x, y), "button": button}
+            })
+
+        @self.window.event
         def on_key_press(symbol, modifiers):
             self._event_queue.append({
                 "name": "key_press",
@@ -85,7 +92,7 @@ class Scene:
     def relative_size(self, width: int, height: int) -> tuple[int, int]:
         return self.relative_position(width, height)
     
-    def relative_coordinate(self, value: int, axis: typing.Literal["x", "y"]) -> int:
+    def relative_axis_value(self, value: int, axis: typing.Literal["x", "y"]) -> int:
         return self.relative_position(value, value)[axis == "y"]
     
     def centered_position(self, width: int, height: int) -> tuple[int, int]:
@@ -94,11 +101,15 @@ class Scene:
             (self.window.height - height) // 2
         )
     
-    def commit_entities_update_by_id(self, configs: list[scene_types.EntitiesListByIdConfig]):
+    def commit_entities_update_by_id(
+        self, 
+        configs: list[scene_types.EntitiesListByIdConfig]
+    ) -> list[scene_types.EntitiesListByIdConfig]:
         commit_trackers: list[scene_types.CommitTracker] = []
+        failed_configs: list[scene_types.EntitiesListByIdConfig] = []
 
         for config in configs:
-            # ---- proteção de identidade (bootstrap-safe) ----
+            # ---- proteção de identidade ----
             needs_identity = (
                 config.relation is not None and
                 (
@@ -112,6 +123,7 @@ class Scene:
                     "[WARN] Commit skipped: entity without identity "
                     f"(self_id={config.self_id}, anchor_id={config.anchor_id})"
                 )
+                failed_configs.append(config)
                 continue
 
             # validações estruturais (bugs reais)
@@ -180,6 +192,7 @@ class Scene:
                     raise ValueError(f"Replace failed: Anchor '{config.anchor_id}' not found")
 
         self._entities = new_entities
+        return failed_configs
 
     def entity_by_id(self, id_: int):
         for entity in self._entities:
@@ -227,12 +240,40 @@ class Scene:
                         ):
                             self._logic_queue.append({
                                 "name": "interaction",
-                                "data": {
-                                    "interaction_name": entity.interaction_name,
-                                    "entity_id": entity.id_
-                                }
+                                "data": {"interaction_name": entity.interaction_name,"entity_id": entity.id_}
                             })
                             break
+                case "mouse_release":
+                    found_target = False
+                    
+                    # 2. Procura por entidades interativas (prioridade)
+                    for entity in reversed(self._entities):
+                        if (
+                            entity.interaction_name and
+                            utils.detections.point_inside_area(
+                                event["data"]["position"],
+                                (entity.drawable.position, (entity.drawable.width, entity.drawable.height))
+                            )
+                        ):
+                            self._logic_queue.append({
+                                "name": "release_interaction", # Nome Rico
+                                "data": {
+                                    "interaction_name": entity.interaction_name,
+                                    "entity_id": entity.id_,
+                                }
+                            })
+                            found_target = True
+                            break
+
+                    # 4. Fallback: Se não clicou em nada interativo, manda o evento genérico
+                    if not found_target:
+                        self._logic_queue.append({
+                            "name": "mouse_release",
+                            "data": {
+                                "position": event["data"]["position"]
+                            }
+                        })
+                    break
                 case "key_press":
                     for entity in self._entities:
                         symbol_prefix = f"{event['data']['symbol']}_"
@@ -296,6 +337,9 @@ class Scene:
     def process_interaction(self, logic_data) -> str | None:
         pass
 
+    def process_release_interaction(self, logic_data) -> str | None:
+        pass
+
     def process_natural(self, logic) -> str | None:
         pass
 
@@ -320,6 +364,8 @@ class Scene:
         for logic in self._logic_queue:
             if logic["name"] == "interaction":
                 result = self.process_interaction(logic["data"])
+            elif logic["name"] == "release_interaction":
+                result = self.process_release_interaction(logic["data"])
             else:
                 result = self.process_natural(logic)
         if result:
@@ -396,7 +442,7 @@ class Scene:
                 cycle_start = now
                 if not self.video_player.source:
                     self.current_cycle += 1
-
+            
             self._process_events()
             if not self.video_player.source:
                 self._tick_audio()
