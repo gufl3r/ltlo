@@ -70,7 +70,6 @@ def numeric_stepper(
         ],
     )
 
-    # -------- valor (display only) --------
     entities += generic_entities.button(
         name=name,
         text=value_text,
@@ -88,7 +87,6 @@ def numeric_stepper(
         ],
     )
 
-    # -------- botão + --------
     entities += generic_entities.button(
         name=name,
         text="+",

@@ -293,6 +293,9 @@ class Scene:
 
     def _tick_video(self):
         if self.video_player.source:
+            # Custom end-of-media handling:
+            # pyglet's Player.on_eos does not integrate well with the manual scene loop,
+            # so end-of-video is detected synchronously via time/duration.
             if self.video_player.time > self.video_player.source.duration:
                 self.video_player.next_source()
                 self.after_video(self.video_player)
@@ -350,7 +353,7 @@ class Scene:
 
     def _draw(self) -> None:
         self.window.clear()
-    
+        
         for entity in self._entities:
             entity.drawable.draw()
 

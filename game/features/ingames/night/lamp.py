@@ -15,9 +15,12 @@ def toggle_lamp(scene: "NightScene", logic_data: dict):
         source = scene.assets["animations"]["lamp_off"]
         if turned_on:
             source = scene.assets["animations"]["lamp_on"]
+        drawable = pyglet.sprite.Sprite(source, x=entity.drawable.x, y=entity.drawable.y)
+        drawable.width = entity.drawable.width
+        drawable.height = entity.drawable.height
         return dataclasses.replace(
             entity,
-            drawable=pyglet.sprite.Sprite(source, x=entity.drawable.x, y=entity.drawable.y),
+            drawable=drawable,
             states=states,
             tags=entity.tags if scene.ANIMATION_LOOP_TAG in entity.tags else entity.tags + [scene.ANIMATION_LOOP_TAG]
         )

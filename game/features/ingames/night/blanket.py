@@ -7,6 +7,7 @@ if typing.TYPE_CHECKING:
     from game.scenes.ingames.night import NightScene
 
 TENSION = 0.075
+COVER_BOUNDARY = 0.6
 
 def generate_natural_logic(scene: "NightScene"):
     def new_blanket(entity: scene_types.Entity):
@@ -24,26 +25,29 @@ def generate_natural_logic(scene: "NightScene"):
     current_y = blanket_entity.drawable.y
     blanket_y = current_y
 
-    # 1. Define o Alvo
     target_y = scene.save["settings"]["resolution"][1] * -0.9
     if held:
         target_y = scene.window._mouse_y - blanket_entity.drawable.height + scene.save["settings"]["resolution"][1] * 0.05
 
     diff = target_y - current_y
 
-    if abs(diff) < 1.0:
-        blanket_y = target_y
-    else:
+    if abs(diff) > 1.0:
         step = diff * TENSION
         if abs(step) < 1.0:
             if step > 0:
                 step += 1
             else:
                 step -= 1
+        blanket_y = min(0, blanket_y + step)
 
-        blanket_y += step
+    covered_percent = 1 + blanket_y / scene.save["settings"]["resolution"][1]
+    if covered_percent > COVER_BOUNDARY:
+        scene._logic_queue.append({
+            "name": "cover_consequences",
+            "data": {"covered_percent": covered_percent}
+        })
 
-    if int(blanket_y) != int(current_y):
+    if blanket_y != current_y:
         scene.commit_entities_update_by_id([
             scene_types.EntitiesListByIdConfig(
                 self_id=blanket_entity.id_,
