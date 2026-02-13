@@ -70,7 +70,7 @@ class Scene:
         import game.subscenes.default.video as video_subscene
 
         video_subscene_obj = video_subscene.VideoSubScene(self.window,self.save,{"video_asset": video_asset})
-        if video_subscene_obj.loop() == "close":
+        if video_subscene_obj.loop() == "exit":
             self._logic_queue.append({"name": "exit"})
         del video_subscene_obj
         self.register_handlers()
