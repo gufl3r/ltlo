@@ -34,11 +34,9 @@ def info_box(
     bw, bh = box_size
     button_w, button_h = button_size
 
-    # -------- centralização --------
     x = (sw - bw) // 2
     y = (sh - bh) // 2
 
-    # -------- corner radius (derivado, igual aos outros objetos) --------
     radius = max(min(bw, bh) * 0.1, 2)
 
     entities: list[scene_types.Entity] = []
@@ -49,16 +47,15 @@ def info_box(
         y=0,
         width=sw,
         height=sh,
-        color=overlay_color[:3],
+        color=overlay_color,
     )
-    overlay.opacity = overlay_color[3]
 
     entities += [
         scene_types.Entity(
             drawable=overlay,
             name=name,
             ticks_left=duration,
-            interaction_name="modal_block",
+            interaction_name="block",
             hud=hud,
             tags=tags + ["info_box", "info_box_overlay"],
         )

@@ -5,7 +5,6 @@ import game.types.scenes as scene_types
 import utils.detections
 import utils.conversions
 import utils.ids
-import game.entitymodels.generic as generic_entities
 import typing
 import utils.registry.runtimeconfig as runtime_config
 import dataclasses
@@ -22,13 +21,14 @@ class Scene:
         self._event_queue: list = []
         self._logic_queue: list = []
         self._entities: list[scene_types.Entity] = []
-        self.video_player: pyglet.media.Player = pyglet.media.Player()
         self.audio_player: pyglet.media.Player = pyglet.media.Player()
 
         audio_settings = self.save["settings"]["audio"]
-        self.video_player.volume = audio_settings["cutscene"] * audio_settings["master"]
         self.audio_player.volume = audio_settings["music"] * audio_settings["master"]
 
+        self.register_handlers()
+
+    def register_handlers(self):
         @self.window.event
         def on_close():
             self._event_queue.append({"name": "close"})
@@ -57,30 +57,23 @@ class Scene:
             })
             if symbol == key.ESCAPE:
                 return True # prevent default handler
-        
-        skip_video_listener = generic_entities.keyboard_listener(
-            "enter_listener",
-            key.ENTER,
-            "skip_video",
-            -1
-        )
-
-        self.commit_entities_update_by_id(
-            [scene_types.EntitiesListByIdConfig(
-                anchor_id=None,
-                self_id=None,
-                relation=None,
-                entity_generator=lambda _, e=skip_video_listener: e
-            )]
-        )
 
     # ---------- HELPER METHODS ----------
 
     def play_sound_effect(self, sound_object: pyglet.media.Source):
         audio_settings = self.save["settings"]["audio"]
         disposable_player = sound_object.play()
-        disposable_player.seek(0)
         disposable_player.volume = audio_settings["sfx"] * audio_settings["master"]
+        disposable_player.seek(0)
+
+    def play_cutscene(self, video_asset):
+        import game.subscenes.default.video as video_subscene
+
+        video_subscene_obj = video_subscene.VideoSubScene(self.window,self.save,{"video_asset": video_asset})
+        if video_subscene_obj.loop() == "close":
+            self._logic_queue.append({"name": "exit"})
+        del video_subscene_obj
+        self.register_handlers()
 
     def relative_position(self, x: int, y: int) -> tuple[int, int]:
         return utils.conversions.convert_position(
@@ -126,7 +119,6 @@ class Scene:
                 failed_configs.append(config)
                 continue
 
-            # validações estruturais (bugs reais)
             if config.relation == "behind" and not config.anchor_id:
                 raise ValueError("Invalid combination: behind relation requires anchor_id")
 
@@ -246,7 +238,6 @@ class Scene:
                 case "mouse_release":
                     found_target = False
                     
-                    # 2. Procura por entidades interativas (prioridade)
                     for entity in reversed(self._entities):
                         if (
                             entity.interaction_name and
@@ -256,7 +247,7 @@ class Scene:
                             )
                         ):
                             self._logic_queue.append({
-                                "name": "release_interaction", # Nome Rico
+                                "name": "release_interaction",
                                 "data": {
                                     "interaction_name": entity.interaction_name,
                                     "entity_id": entity.id_,
@@ -264,8 +255,6 @@ class Scene:
                             })
                             found_target = True
                             break
-
-                    # 4. Fallback: Se não clicou em nada interativo, manda o evento genérico
                     if not found_target:
                         self._logic_queue.append({
                             "name": "mouse_release",
@@ -289,28 +278,6 @@ class Scene:
 
         self._event_queue.clear()
 
-    # ------ VIDEO MANAGER ------
-
-    def _tick_video(self):
-        if self.video_player.source:
-            # Custom end-of-media handling:
-            # pyglet's Player.on_eos does not integrate well with the manual scene loop,
-            # so end-of-video is detected synchronously via time/duration.
-            if self.video_player.time > self.video_player.source.duration:
-                self.video_player.next_source()
-                self.after_video(self.video_player)
-            texture = self.video_player.texture
-            if texture:
-                texture.blit(0, 0, width=self.window.width, height=self.window.height)
-    
-    def _video_process_logic(self):
-        for logic in self._logic_queue:
-            if logic["name"] == "exit":
-                return "exit"
-            if logic["name"] == "interaction" and logic["data"]["interaction_name"] == "skip_video":
-                self.after_video(self.video_player)
-        self._logic_queue.clear()
-
     # ------ AUDIO MANAGER ------
 
     def _tick_audio(self):
@@ -318,24 +285,16 @@ class Scene:
             self.audio_player.next_source()
             self.after_audio(self.audio_player)
 
-    # ------ MEDIA MANAGER ------
-
-    def _after_media(self, player: pyglet.media.Player) -> None:
-        if player.loop:
-            player.seek(0)
-        else:
-            player.next_source()
-
     # ---------- HOOKS ----------
 
     def generate_natural_logic(self) -> None:
         pass
 
-    def after_video(self, player) -> None:
-        self._after_media(player)
-
-    def after_audio(self, player) -> None:
-        self._after_media(player)
+    def after_audio(self, player: pyglet.media.Player) -> None:
+        if player.loop:
+            player.seek(0)
+        else:
+            player.next_source()
 
     def process_interaction(self, logic_data) -> str | None:
         pass
@@ -357,7 +316,6 @@ class Scene:
         for entity in self._entities:
             entity.drawable.draw()
 
-        self._tick_video()
         self.window.flip()
 
     # ------- PROCESS LOGIC -------
@@ -443,19 +401,13 @@ class Scene:
 
                 self.ticks_in_cycle = 0
                 cycle_start = now
-                if not self.video_player.source:
-                    self.current_cycle += 1
+                self.current_cycle += 1
             
             self._process_events()
-            if not self.video_player.source:
-                self._tick_audio()
-                self.generate_natural_logic()
-                self._update_entities()
-                new_scene = self._process_logic()
-                if new_scene:
-                    return new_scene
-            else:
-                new_scene = self._video_process_logic()
-                if new_scene:
-                    return new_scene
+            self._tick_audio()
+            self.generate_natural_logic()
+            self._update_entities()
+            new_scene = self._process_logic()
+            if new_scene:
+                return new_scene
             self._draw()

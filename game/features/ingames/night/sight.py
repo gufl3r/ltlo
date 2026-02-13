@@ -26,17 +26,20 @@ def generate_natural_logic(scene: "NightScene"):
         look_strength = FAST_LOOK if "look_fast" in entity.tags else SLOW_LOOK
         look_offset_x = scene.relative_axis_value(look_strength, "x")
 
-        # direção lógica da câmera
         if "look_left" in entity.tags:
             look_offset_x = -look_offset_x
-
         break
 
-    if not look_offset_x:
+    # Delega a movimentação para a função standalone
+    if look_offset_x:
+        apply_sight_offset(scene, look_offset_x)
+
+def apply_sight_offset(scene: "NightScene", offset_x: float):
+    if not offset_x:
         return
 
     # -------- limites da visão --------
-    current_scene_x = scene.x
+    current_scene_x = scene.x # assumindo que já é int, mas garante
 
     room = scene.entities_by_name("dark_room")[0]
     room_width = room.drawable.width
@@ -44,23 +47,27 @@ def generate_natural_logic(scene: "NightScene"):
 
     max_scene_x = room_width - viewport_width
 
-    desired_scene_x = current_scene_x + look_offset_x
-    clamped_scene_x = sorted((0, desired_scene_x, max_scene_x))[1]
+    desired_scene_x = current_scene_x + offset_x
+    
+    clamped_val = sorted((0, desired_scene_x, max_scene_x))[1]
 
-    real_offset_x = clamped_scene_x - current_scene_x
+    new_scene_x = int(clamped_val)
 
-    # atualiza posição lógica da câmera
-    scene.x = clamped_scene_x
+    real_offset_x = new_scene_x - current_scene_x
+
+    if real_offset_x == 0:
+        return
+
+    scene.x = new_scene_x
 
     # -------- resolve alvos --------
     targets = scene.entities_by_tags(required=["room_movable"])
     if not targets:
         return
 
-    # -------- apply (mundo move ao contrário da câmera) --------
-    def apply_look_offset(entity: scene_types.Entity):
+    def _transform_entity(entity: scene_types.Entity):
         if entity.name == "dark_room":
-            entity.drawable.x = -scene.x # force room x in case its commit is skipped
+            entity.drawable.x = -scene.x
         else:
             entity.drawable.x -= real_offset_x
 
@@ -73,7 +80,7 @@ def generate_natural_logic(scene: "NightScene"):
             scene_types.EntitiesListByIdConfig(
                 self_id=entity.id_,
                 relation="replace",
-                entity_generator=apply_look_offset,
+                entity_generator=_transform_entity,
             )
             for entity in targets
         ])

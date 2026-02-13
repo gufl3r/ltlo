@@ -25,9 +25,8 @@ class NightScene(base_scene.Scene):
         sight_feature.generate_natural_logic(self)
         blanket_feature.generate_natural_logic(self)
         player_feature.generate_natural_logic(self)
-
-    def after_video(self, player) -> None:
-        super().after_video(player)
+        if self.current_cycle == 0 and self.ticks_in_cycle == 2:
+            init_system.post_init(self)
     
     def after_audio(self, player) -> None:
         super().after_audio(player)

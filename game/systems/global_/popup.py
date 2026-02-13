@@ -9,7 +9,7 @@ def info_box_ok(scene: "Scene", logic_data: dict):
     def kill_entity(entity: scene_types.Entity):
         return dataclasses.replace(
             entity,
-            ticks_left=1
+            ticks_left=0
         )
     popup_entities = scene.entities_by_tags(required=["info_box"])
 

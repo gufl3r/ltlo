@@ -5,6 +5,7 @@ import game.types.scenes as scene_types
 import game.types.ingames.night as night_types
 import pyglet
 import utils.registry.runtimeconfig as runtime_config
+import game.features.ingames.night.sight as sight_feature
 
 if typing.TYPE_CHECKING:
     from game.scenes.ingames.night import NightScene
@@ -14,6 +15,8 @@ def init_assets(scene: "NightScene"):
         images=
         [
             "assets/ingames/night/dark_room.png",
+
+            "assets/ingames/night/vignette.png",
         ],
         animations=
         [
@@ -21,6 +24,10 @@ def init_assets(scene: "NightScene"):
             "assets/ingames/night/lamp_off.gif",
 
             "assets/ingames/night/blanket.gif"
+        ],
+        videos=
+        [
+            "assets/ingames/night/test.mp4"
         ]
     )
 
@@ -107,7 +114,7 @@ def init_entities(scene: "NightScene"):
 
     lamp_asset: pyglet.image.animation.Animation = scene.assets["animations"]["lamp_off"]
     lamp_size = scene.relative_size(lamp_asset.get_max_width(), lamp_asset.get_max_height())
-    lamp_position = scene.relative_position(room_size[0] - lamp_size[0], 0)
+    lamp_position = (room_size[0] - lamp_size[0], 0)
     lamp = generic_entities.animated(
         name="lamp",
         animation=lamp_asset,
@@ -131,15 +138,15 @@ def init_entities(scene: "NightScene"):
         states=[scene_types.State("held", {"value": False})]
     )
 
-    foot_size = scene.relative_size(120, 80)
-    foot_position = list(scene.relative_position(240, 80))
+    foot_size = scene.relative_size(150, 80)
+    foot_position = list(scene.relative_position(10, 100))
     foot_position[0] += int((room_size[0] / 2) - (foot_size[0] / 2))
     foot_hitbox = pyglet.shapes.Box(
         x=foot_position[0], 
         y=foot_position[1], 
         width=foot_size[0], 
         height=foot_size[1], 
-        color=(255, 255, 255, 100), 
+        color=(255, 200, 200, 100), 
         thickness=scene.relative_axis_value(2, "x")
     )
 
@@ -151,12 +158,57 @@ def init_entities(scene: "NightScene"):
         hud=False,
         tags=["room_movable"]
     )
+
+    # lub = look under bed
+    lub_size = scene.relative_size(150, 100)
+    lub_position = list(scene.relative_position(-300, 80))
+    lub_position[0] += int((room_size[0] / 2) - (lub_size[0] / 2))
+    lub_hitbox = pyglet.shapes.Box(
+        x=lub_position[0], 
+        y=lub_position[1], 
+        width=lub_size[0], 
+        height=lub_size[1], 
+        color=(200, 200, 255, 100), 
+        thickness=scene.relative_axis_value(2, "x")
+    )
+
+    lub_btn = scene_types.Entity(
+        drawable=lub_hitbox,
+        name="lub_trigger",
+        ticks_left=-1,
+        interaction_name="look_under_bed",
+        hud=False,
+        tags=["room_movable"]
+    )
+
+    vignette = generic_entities.image(
+        name="vignette",
+        image=scene.assets["images"]["vignette"],
+        position=(0,0),
+        size=tuple(scene.save["settings"]["resolution"]),
+        duration=-1,
+        interaction_name=None,
+        hud=True
+    )
+
+    black_overlay = scene_types.Entity(
+        drawable=pyglet.shapes.Rectangle(0,0,scene.save["settings"]["resolution"][0],scene.save["settings"]["resolution"][1], (0,0,0,0)),
+        name="black_overlay",
+        ticks_left=-1,
+        interaction_name=None,
+        hud=True,
+    )
+
     initial_entities = [
         dark_room,
         lamp,
         blanket,
         *look_triggers,
-        foot_btn
+        foot_btn,
+        lub_btn,
+        generic_entities.layer_anchor("overlay", True),
+        vignette,
+        black_overlay
     ]
 
     scene.commit_entities_update_by_id(
@@ -170,8 +222,16 @@ def init_entities(scene: "NightScene"):
     )
 
 def init_media(scene: "NightScene"):
-    pass
+    scene.play_cutscene(scene.assets["videos"]["test"])
 
 def init_vars(scene: "NightScene") -> None:
     scene.x = 0
     scene.player = night_types.Player()
+
+def post_init(scene: "NightScene"):
+    room_width = scene.entities_by_name("dark_room")[0].drawable.width
+    window_width = scene.save["settings"]["resolution"][0]
+
+    center_offset = (room_width - window_width) / 2
+    
+    sight_feature.apply_sight_offset(scene, center_offset)
