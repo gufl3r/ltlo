@@ -1,18 +1,17 @@
-import utils.path
-import utils.assets
+import engine.utils.assets
 import typing
-import game.entitymodels.generic as generic_entities
-import game.entitymodels.menu as menu_entities
-import game.types.scenes as scene_types
+import engine.factories.generic as generic_entities
+import engine.factories.menu as menu_entities
+import engine.types.scene as scene_types
 import pyglet
 
 if typing.TYPE_CHECKING:
-    from game.scenes.menus.settings import SettingsScene
+    from game.scenes.menus.settings.settings import SettingsScene
 
 def init_assets(scene: "SettingsScene"):
-    scene.assets = utils.assets.asset_path_to_obj(
+    scene.assets = engine.utils.assets.asset_path_to_obj(
         images=[
-            "assets/menus/settings/bg.png"
+            "game/assets/menus/settings/bg.png"
         ]
     )
 
@@ -27,8 +26,8 @@ def init_entities(scene: "SettingsScene", save: dict):
     # columns
     column_offset = int(scene.window.width * 0.18)
 
-    audio_width = audio_button_size[0] * 2.5
-    audio_x = center_x - column_offset - audio_width // 2
+    audio_width = int(audio_button_size[0] * 2.5)
+    audio_x = int(center_x - column_offset - audio_width // 2)
     video_x = center_x + column_offset - button_size[0] // 2
 
     # audio layout

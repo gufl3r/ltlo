@@ -1,25 +1,25 @@
-import utils.libs
-utils.libs.load()
-import utils.registry.registry as registry
-registry.load()
+import engine.utils.libs
+engine.utils.libs.load()
+import engine.registry.registry
+engine.registry.registry.load()
 import pyglet
-import utils.save
+import shared.utils.save as saves_manager
 import game.mastercontroller as master_controller
-import utils.registry.gameinfo as game_info
-import utils.log
+import engine.registry.gameinfo as game_info
+import engine.utils.log
 import copy
-import utils.registry.gamecapacities as game_capacities
+import engine.registry.gamecapacities as game_capacities
 
 def main() -> None:
-    save = utils.save.init_save()
+    save = saves_manager.init_save()
     window = pyglet.window.Window(caption=game_info.NAME_SLUG.upper())
 
     pre_apply_snapshot = copy.deepcopy(save)
 
-    error = utils.save.apply_settings(save, window)
+    error = saves_manager.apply_settings(save, window)
 
     if error:
-        utils.log.write_log(
+        engine.utils.log.write_log(
             severity="warning",
             message="Invalid screen mode detected on boot. Settings were restored silently.",
             errors=[error[0]],
@@ -27,7 +27,7 @@ def main() -> None:
         )
         save["settings"]["resolution"] = game_capacities.RESOLUTION_OPTIONS[0]
         save["settings"]["fullscreen"] = False
-        utils.save.save_settings(save)
+        saves_manager.save_settings(save)
 
     master_controller.MasterController(save, window).loop()
 

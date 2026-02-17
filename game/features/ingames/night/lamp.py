@@ -1,34 +1,57 @@
 import pyglet
 import typing
-import game.types.scenes as scene_types
+import engine.types.scene as scene_types
 import dataclasses
 
 if typing.TYPE_CHECKING:
-    from game.scenes.ingames.night import NightScene
+    from game.scenes.ingames.night.night import NightScene
 
 def toggle_lamp(scene: "NightScene", logic_data: dict):
+    lamp_id = scene.cached_ids["lamp"]
+
     def new_lamp(entity: scene_types.Entity):
-        index, state = next((index, state) for index, state in enumerate(entity.states) if state.name == "turned_on")
-        turned_on = not state.data["value"]
         states = entity.states.copy()
-        states[index] = scene_types.State("turned_on", {"value": turned_on})
-        source = scene.assets["animations"]["lamp_off"]
-        if turned_on:
-            source = scene.assets["animations"]["lamp_on"]
-        drawable = pyglet.sprite.Sprite(source, x=entity.drawable.x, y=entity.drawable.y)
-        drawable.width = entity.drawable.width
-        drawable.height = entity.drawable.height
+        
+        target_index = -1
+        is_on = False
+
+        for i, state in enumerate(states):
+            if state.name == "turned_on":
+                target_index = i
+                is_on = state.data["value"]
+                break
+
+        new_is_on = not is_on
+        states[target_index] = scene_types.State("turned_on", {"value": new_is_on})
+
+        if new_is_on:
+            new_source = scene.assets["animations"]["lamp_on"]
+        else:
+            new_source = scene.assets["animations"]["lamp_off"]
+
+        old_sprite = entity.drawable
+        new_sprite = pyglet.sprite.Sprite(
+            img=new_source, 
+            x=old_sprite.x, 
+            y=old_sprite.y
+        )
+        new_sprite.width = old_sprite.width
+        new_sprite.height = old_sprite.height
+
+        new_tags = entity.tags
+        if scene.ANIMATION_LOOP_TAG not in new_tags:
+            new_tags = entity.tags + [scene.ANIMATION_LOOP_TAG]
+
         return dataclasses.replace(
             entity,
-            drawable=drawable,
+            drawable=new_sprite,
             states=states,
-            tags=entity.tags if scene.ANIMATION_LOOP_TAG in entity.tags else entity.tags + [scene.ANIMATION_LOOP_TAG]
+            tags=new_tags
         )
     
-    lamp_entity_id: int = logic_data["entity_id"]
     scene.commit_entities_update_by_id([
         scene_types.EntitiesListByIdConfig(
-            self_id=lamp_entity_id,
+            self_id=lamp_id,
             relation="replace",
             entity_generator=new_lamp,
         )

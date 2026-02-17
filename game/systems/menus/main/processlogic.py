@@ -1,7 +1,7 @@
 import typing
 
 if typing.TYPE_CHECKING:
-    from game.scenes.menus.main import MainMenuScene
+    from game.scenes.menus.main.main import MainMenuScene
 
 def process_interaction(scene: "MainMenuScene", logic_data: dict):
     match logic_data["interaction_name"]:

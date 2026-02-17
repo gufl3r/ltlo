@@ -1,10 +1,9 @@
 import dataclasses
-import pyglet
 import typing
-import game.types.scenes as scene_types
+import engine.types.scene as scene_types
 
 if typing.TYPE_CHECKING:
-    from game.scenes.menus.settings import SettingsScene
+    from game.scenes.menus.settings.settings import SettingsScene
 
 def toggle_fullscreen(scene: "SettingsScene", data: dict) -> None:
     entity_id: int = data["entity_id"]

@@ -1,10 +1,10 @@
 import typing
-import game.types.scenes as scene_types
+import engine.types.scene as scene_types
 import dataclasses
 import copy
 
 if typing.TYPE_CHECKING:
-    from game.scenes.ingames.night import NightScene
+    from game.scenes.ingames.night.night import NightScene
 
 TENSION = 0.075
 COVER_BOUNDARY = 0.6
@@ -18,7 +18,11 @@ def generate_natural_logic(scene: "NightScene"):
             drawable=drawable
         )
 
-    blanket_entity = scene.entities_by_name("blanket")[0]
+    if "blanket" not in scene.cached_ids:
+        return
+    blanket_entity = scene.entity_by_id(scene.cached_ids["blanket"])
+    if not blanket_entity:
+        return
     held_state = next(state for state in blanket_entity.states if state.name == "held")
     held = held_state.data["value"]
 
@@ -87,8 +91,7 @@ def let_go_of_blanket(scene: "NightScene", logic_data: dict):
             entity,
             states=states
         )
-    blanket_entity = scene.entities_by_name("blanket")[0]
-    blanket_entity_id: int = blanket_entity.id_
+    blanket_entity_id: int = scene.cached_ids["blanket"]
     scene.commit_entities_update_by_id([
         scene_types.EntitiesListByIdConfig(
             self_id=blanket_entity_id,

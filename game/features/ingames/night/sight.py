@@ -1,47 +1,54 @@
 import dataclasses
 import typing
-import utils.detections
-import game.types.scenes as scene_types
+import engine.utils.detections
+import engine.types.scene as scene_types
 
 if typing.TYPE_CHECKING:
-    from game.scenes.ingames.night import NightScene
+    from game.scenes.ingames.night.night import NightScene
 
 FAST_LOOK = 12
 SLOW_LOOK = 6
 
 def generate_natural_logic(scene: "NightScene"):
     look_offset_x = 0
+    mouse_pos = (scene.window._mouse_x, scene.window._mouse_y)
 
-    # -------- detecta look trigger --------
-    for entity in reversed(scene._entities):
-        if entity.name != "look_trigger":
-            continue
+    trigger_keys = [
+        ("look_left_fast",  -FAST_LOOK),
+        ("look_right_fast",  FAST_LOOK),
+        ("look_left_slow",  -SLOW_LOOK),
+        ("look_right_slow",  SLOW_LOOK),
+    ]
 
-        if not utils.detections.point_inside_area(
-            (scene.window._mouse_x, scene.window._mouse_y),
-            (entity.drawable.position, (entity.drawable.width, entity.drawable.height))
+    for cache_key, strength in trigger_keys:
+        trigger_id = scene.cached_ids.get(cache_key)
+        if trigger_id is None: continue
+
+        entity = scene.entity_by_id(trigger_id)
+        if not entity: continue
+
+        if engine.utils.detections.point_inside_area(
+            mouse_pos,
+            ((entity.drawable.x, entity.drawable.y), (entity.drawable.width, entity.drawable.height))
         ):
-            continue
+            look_offset_x = scene.relative_axis_value(strength, "x")
+            break
 
-        look_strength = FAST_LOOK if "look_fast" in entity.tags else SLOW_LOOK
-        look_offset_x = scene.relative_axis_value(look_strength, "x")
-
-        if "look_left" in entity.tags:
-            look_offset_x = -look_offset_x
-        break
-
-    # Delega a movimentação para a função standalone
     if look_offset_x:
         apply_sight_offset(scene, look_offset_x)
 
 def apply_sight_offset(scene: "NightScene", offset_x: float):
     if not offset_x:
         return
+    if "dark_room" not in scene.cached_ids:
+        return
 
     # -------- limites da visão --------
-    current_scene_x = scene.x # assumindo que já é int, mas garante
+    current_scene_x = scene.x
 
-    room = scene.entities_by_name("dark_room")[0]
+    room = scene.entity_by_id(scene.cached_ids["dark_room"])
+    if not room:
+        return
     room_width = room.drawable.width
     viewport_width = scene.window.width
 

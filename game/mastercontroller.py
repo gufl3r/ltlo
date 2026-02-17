@@ -1,5 +1,5 @@
-import game.scenes.menucontroller as menu_controller
-import game.scenes.ingamecontroller as ingame_controller
+import game.scenes.menus.menucontroller as menu_controller
+import game.scenes.ingames.ingamecontroller as ingame_controller
 from pyglet.window import Window
 
 class MasterController:

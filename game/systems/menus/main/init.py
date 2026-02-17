@@ -1,19 +1,17 @@
-import utils.path
-import utils.assets
+import engine.utils.assets
 import typing
-import game.entitymodels.generic as generic_entities
-import game.types.scenes as scene_types
+import engine.factories.generic as generic_entities
+import engine.types.scene as scene_types
 import pyglet
-import json
-import utils.registry.gameinfo as game_info
+import engine.registry.gameinfo as game_info
 
 if typing.TYPE_CHECKING:
-    from game.scenes.menus.main import MainMenuScene
+    from game.scenes.menus.main.main import MainMenuScene
 
 def init_assets(scene: "MainMenuScene"):
-    scene.assets = utils.assets.asset_path_to_obj(
+    scene.assets = engine.utils.assets.asset_path_to_obj(
         images=[
-            "assets/menus/main/bg.png"
+            "game/assets/menus/main/bg.png"
         ]
     )
 

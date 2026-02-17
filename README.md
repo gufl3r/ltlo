@@ -56,7 +56,7 @@ The project is configured for PyInstaller using `build.bat`.
     *   `scenes/`: Base `Scene` class and specific implementations.
     *   `systems/`: Initialization and process logic per scene.
     *   `features/`: Modular game mechanics.
-    *   `entitymodels/`: Factory functions for entity creation (Prefabs).
+    *   `factories/`: Factory functions for entity creation (Prefabs).
     *   `types/`: Dataclasses for strict typing of engine structures.
 *   `utils/`: Helper libraries for assets, math, path resolution, and serialization.
 *   `libs/`: Native binaries (FFmpeg).

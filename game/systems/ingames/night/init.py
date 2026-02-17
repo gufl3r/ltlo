@@ -1,33 +1,33 @@
-import utils.assets
+import engine.utils.assets as assets_manager
 import typing
-import game.entitymodels.generic as generic_entities
-import game.types.scenes as scene_types
+import engine.factories.generic as generic_entities
+import engine.types.scene as scene_types
 import game.types.ingames.night as night_types
 import pyglet
-import utils.registry.runtimeconfig as runtime_config
+import engine.registry.runtimeconfig as runtime_config
 import game.features.ingames.night.sight as sight_feature
 
 if typing.TYPE_CHECKING:
-    from game.scenes.ingames.night import NightScene
+    from game.scenes.ingames.night.night import NightScene
 
 def init_assets(scene: "NightScene"):
-    scene.assets = utils.assets.asset_path_to_obj(
+    scene.assets = assets_manager.asset_path_to_obj(
         images=
         [
-            "assets/ingames/night/dark_room.png",
+            "game/assets/ingames/night/dark_room.png",
 
-            "assets/ingames/night/vignette.png",
+            "game/assets/ingames/night/vignette.png",
         ],
         animations=
         [
-            "assets/ingames/night/lamp_on.gif",
-            "assets/ingames/night/lamp_off.gif",
+            "game/assets/ingames/night/lamp_on.gif",
+            "game/assets/ingames/night/lamp_off.gif",
 
-            "assets/ingames/night/blanket.gif"
+            "game/assets/ingames/night/blanket.gif"
         ],
         videos=
         [
-            "assets/ingames/night/test.mp4"
+            "game/assets/ingames/night/test.mp4"
         ]
     )
 
@@ -227,11 +227,23 @@ def init_media(scene: "NightScene"):
 def init_vars(scene: "NightScene") -> None:
     scene.x = 0
     scene.player = night_types.Player()
+    scene.cached_ids = {}
 
 def post_init(scene: "NightScene"):
+    scene.cached_ids["blanket"] = scene.entities_by_name("blanket")[0].id_
+    scene.cached_ids["lamp"] = scene.entities_by_name("lamp")[0].id_
+    scene.cached_ids["black_overlay"] = scene.entities_by_name("black_overlay")[0].id_
+    scene.cached_ids["dark_room"] = scene.entities_by_name("dark_room")[0].id_
+
+    for entity in scene._entities:
+        if entity.name == "look_trigger":
+            side = "left" if "look_left" in entity.tags else "right"
+            speed = "fast" if "look_fast" in entity.tags else "slow"
+            
+            key = f"look_{side}_{speed}"
+            scene.cached_ids[key] = entity.id_
+
     room_width = scene.entities_by_name("dark_room")[0].drawable.width
     window_width = scene.save["settings"]["resolution"][0]
-
     center_offset = (room_width - window_width) / 2
-    
     sight_feature.apply_sight_offset(scene, center_offset)
