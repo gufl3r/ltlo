@@ -1,72 +1,129 @@
-Here is the updated `README.md`. I have rewritten the architecture and introduction sections to reflect the **MarionettEngine** philosophy, emphasizing the "puppeteer" design pattern where entities are passive data containers controlled by central systems.
-
 ***
 
 # Leave The Light Off (LTLO) & MarionettEngine
 
-![Status](https://img.shields.io/badge/Status-In%20Development-orange) ![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![Engine](https://img.shields.io/badge/Engine-MarionettEngine-red)
+![Status](https://img.shields.io/badge/Status-Pre--Alpha-orange) ![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![Engine](https://img.shields.io/badge/Engine-MarionettEngine-red) ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 
-**Leave The Light Off** is a survival horror game about managing exposure and light in a hostile bedroom environment. It is powered by **MarionettEngine**, a custom Python framework designed by **Gufl3r**.
+**Leave The Light Off** is a psychological survival horror game about sensory deprivation, memory, and the fear of what you cannot see.
 
-This repository is a monorepo containing both the engine core and the game implementation.
+It is powered by the **MarionettEngine**, a custom, philosophy-driven Python framework developed by **Gufl3r**. This repository is a monorepo containing both the agnostic engine core and the specific game implementation.
+
+> **⚠️ DEVELOPMENT STATUS: ORGANIC / PRE-ALPHA**
+>
+> This project is in active, organic development. The engine and the game are evolving simultaneously. Features described in the "Plan" section may be partially implemented or currently in the prototyping phase.
 
 ---
 
-## 🎭 The Philosophy: MarionettEngine
+## 📋 Table of Contents
+
+1.  [The Game: Leave The Light Off](#-the-game-leave-the-light-off)
+    *   [Premise & Lore](#premise--lore)
+    *   [The Golden Rule](#the-golden-rule)
+    *   [Core Mechanics](#core-mechanics)
+2.  [The Engine: MarionettEngine](#-the-engine-marionettengine)
+    *   [The Philosophy](#the-philosophy)
+    *   [Architecture Deep Dive](#architecture-deep-dive)
+    *   [The "Backstage" (Frame 0)](#the-backstage-frame-0)
+3.  [Project Structure](#-project-structure)
+4.  [Installation & Usage](#-installation--usage)
+5.  [Building for Distribution](#-building-for-distribution)
+6.  [Configuration & Persistence](#-configuration--persistence)
+7.  [Roadmap & GDD Status](#-roadmap--gdd-status)
+
+---
+
+## 🕯 The Game: Leave The Light Off
+
+### Premise & Lore
+You are a child subject in a clandestine sleep laboratory. You have been in an induced coma for 10 days. The "Bedroom" you inhabit is not real—it is a mental simulation constructed by your subconscious to maintain low brain activity (Delta Waves) while an experimental chemical is tested on you.
+
+However, the chemical is destabilizing. The simulation is failing. The "Monsters" are not ghosts; they are the system's aggressive attempts to hide rendering errors and memory corruptions before you notice them.
+
+### The Golden Rule
+**"Leave The Light Off."**
+
+*   **The Logic:** Darkness hides the low-poly nature of the simulation.
+*   **The Risk:** Turning on the light reveals the "glitches"—wireframe textures, missing assets, and the artificiality of your world.
+*   **The Punishment:** The system (manifested as your Parents/Moderators) punishes illumination. They will intervene to force the simulation back into the dark.
+
+### Core Mechanics
+*   **The Bed:** Your anchor. You cannot walk; you can only move your head (Look Left/Right) and your hands.
+*   **The Blanket (Oxygen vs. Safety):**
+    *   Pulling the blanket up makes you invisible to the "Counter" monsters.
+    *   **Cost:** Staying covered drains your **Stamina** (simulating oxygen deprivation).
+*   **The Leg (Risk vs. Reward):**
+    *   Sticking your foot out regains Stamina rapidly.
+    *   **Risk:** It acts as a lure for the "Foot Monster" (Greed).
+*   **The Lamp:**
+    *   Your only defense against the "Front Monster" (Reflex).
+    *   Use sparingly; light attracts the "Father" (Moderator), who will confiscate the lamp if provoked.
+
+---
+
+## 🎭 The Engine: MarionettEngine
+
+**MarionettEngine** is built on a strict separation of data and behavior, rejecting traditional Object-Oriented game loops where objects "update themselves."
+
+### The Philosophy
 
 > *"The entities are empty corpses. The systems are the puppeteers. Frame 0 is the backstage."*
 
-**MarionettEngine** rejects the traditional Object-Oriented game loop where objects update themselves. Instead, it follows a strict theatrical metaphor:
-
 1.  **The Corpses (Entities):**
-    Entities are passive data containers. They have no methods, no logic, and no will. They are simply "corpses" containing a sprite, a position, and a state (e.g., `held=True`).
+    Entities are strictly Data Classes (`engine.types.scene.Entity`). They contain a drawable (Pyglet sprite/shape), a state dictionary, and tags. They have **no methods**. They do not "think" or "move" on their own.
 
 2.  **The Puppeteers (Systems & Features):**
-    Logic exists exclusively in external Systems. These systems look at the stage, calculate the necessary movements, and determine the outcome of the frame.
+    Logic resides exclusively in external Systems (e.g., `game/features/night/blanket.py`). These systems observe the scene, calculate physics or logic, and determine what the entities *should* do.
 
-3.  **The Backstage (Frame 0):**
-    Before an entity steps into the light, it exists in **Frame 0**. This is the "Backstage."
-    *   Here, entities prepare to *contracenar* (act/interact).
-    *   Relationships are bound (e.g., a Button finding its Text Label).
-    *   Assets are loaded and hitboxes are defined.
-    *   Only after this preparation do they enter the cycle of the game loop (Frame 1+).
+3.  **Coordinated Movement (Transactional Commits):**
+    In a puppet show, strings are pulled in harmony. In the code, systems do not modify entities directly. They submit **Commit Configurations** (`EntitiesListByIdConfig`). The Scene applies all changes in a single, atomic transaction at the end of the tick.
 
-4.  **Coordinated Movement:**
-    In a puppet show, strings are pulled simultaneously. In this engine, no entity changes instantly. Systems submit "Commits," and the Scene applies all changes in a single, coordinated transaction at the end of the tick.
+### Architecture Deep Dive
+*   **Scene:** The container. Manages the Input Queue, Logic Queue, and the Entity List.
+*   **Factories:** Generators that produce Entity "corpses" (e.g., UI Buttons, Numeric Steppers).
+*   **Relations:** Logic that binds two entities together (e.g., binding a text label's ID to a button's background ID) so they move in unison.
+
+### The "Backstage" (Frame 0)
+The engine treats the first frame of an entity's life (`ticks_alive == 0`) as the **Backstage**.
+*   **Preparation:** Before an entity can *contracenar* (act/interact), it must be prepped.
+*   **Binding:** Relations are resolved here. A button looks for its text; a slider looks for its value label.
+*   **Injection:** Only after Frame 0 does the entity enter the main update loop (The Stage).
 
 ---
 
 ## 📂 Project Structure
 
+The repository is a strict Monorepo separating the generic Engine from the specific Game.
+
 ```text
 gufl3r-ltlo/
-├── engine/           # MarionettEngine Core
-│   ├── factories/    # Generators for constructing entity "corpses" (UI, Sprites)
-│   ├── registry/     # Global configuration states
-│   ├── relations/    # Logic for binding entities (e.g., tying a Button to a Label)
-│   ├── scenes/       # The Stage managers
-│   ├── systems/      # The Puppeteers (Pause, Video, Input handling)
-│   └── utils/        # Math, Logging, Asset loading
-├── game/             # Leave The Light Off (Game Data)
-│   ├── assets/       # Visuals and Audio
-│   ├── features/     # Specific mechanics (Blanket physics, Sanity drain, Lamp logic)
-│   ├── mastercontroller.py  # High-level state machine
-│   └── scenes/       # Game-specific stages (Menu, Night, Underbed)
-├── shared/           # Shared Data
-│   └── registry/     # Game Capacities and Runtime Configs
-├── main.py           # Entry point
-└── build.bat         # Windows Build Script
+├── engine/                   # MARIONETTENGINE CORE
+│   ├── factories/            # Props Dept: Generators for UI/Entities
+│   ├── registry/             # Global Configs (Resolutions, Runtime)
+│   ├── relations/            # Backstage Logic: Entity binding
+│   ├── scenes/               # The Stage: Loop & Render logic
+│   ├── systems/              # The Puppeteers: Input, Video, Pause
+│   └── utils/                # Tools: Math, Logging, Assets
+├── game/                     # LEAVE THE LIGHT OFF (DATA & LOGIC)
+│   ├── assets/               # Costumes/Sets: .png, .gif, .mp4, .wav
+│   ├── features/             # Specific Acts: Blanket, Lamp, Sight
+│   ├── mastercontroller.py   # The Director: State Machine
+│   ├── scenes/               # Specific Stages: Night, Menu, Underbed
+│   └── systems/              # Game Logic implementation
+├── shared/                   # SHARED RESOURCES
+│   └── registry/             # JSON Storages (GameInfo, Capacities)
+├── main.py                   # Entry Point
+└── build.bat                 # Build Script
 ```
 
 ---
 
-## 🛠 Installation & Setup
+## 🛠 Installation & Usage
 
 ### Prerequisites
 *   **Python 3.10+**
-*   **Virtual Environment** (Recommended)
+*   **Virtual Environment** (Highly Recommended)
 
-### Steps
+### Setup Steps
 
 1.  **Clone the repository:**
     ```bash
@@ -74,7 +131,7 @@ gufl3r-ltlo/
     cd gufl3r-ltlo
     ```
 
-2.  **Create and activate a virtual environment:**
+2.  **Initialize Virtual Environment:**
     ```bash
     # Windows
     python -m venv .venv
@@ -85,84 +142,74 @@ gufl3r-ltlo/
     source .venv/bin/activate
     ```
 
-3.  **Install dependencies:**
+3.  **Install Dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
-    *Dependencies include `pyglet` for windowing/rendering and `userpaths` for save management.*
+    *Dependencies include `pyglet` (Windowing/Media), `userpaths` (Saves), and `pyinstaller` (Building).*
+
+4.  **Run the Game:**
+    ```bash
+    python main.py
+    ```
 
 ---
 
-## 🚀 Running the Game
+## 📦 Building for Distribution
 
-To execute the project in development mode:
+To compile the Python code into a standalone executable (Windows):
 
-```bash
-python main.py
-```
-
----
-
-## ⚙ Engine Architecture
-
-### 1. Entities (The Corpses)
-Located in `engine.types.scene`, an Entity is a strict Data Class. It contains:
-*   `drawable`: The raw Pyglet object (Sprite, Label, Shape).
-*   `states`: A list of data payloads (e.g., `held: True`, `stamina: 0.5`).
-*   `tags`: String identifiers for grouping.
-*   **No Logic:** An entity never "thinks".
-
-### 2. Systems & Features (The Logic)
-Logic is isolated in `game/features/` or `game/systems/`.
-*   **Example:** The *Blanket Feature* checks the mouse position, calculates tension, and generates a *new* version of the Blanket Entity with updated coordinates.
-
-### 3. Transactional Updates (The Coordination)
-The Scene does not modify entities in place during the logic loop. Instead, features submit "Commit Configurations" via `scene.commit_entities_update_by_id()`.
-*   **Replace:** Swap an old entity corpse for a new one.
-*   **Behind:** Spawn a new entity behind an existing anchor.
-*   All changes are applied simultaneously at the end of the cycle, preventing race conditions and ensuring frame-perfect synchronization.
+1.  Ensure the `.venv` is active.
+2.  Run the build script:
+    ```cmd
+    build.bat
+    ```
+3.  The output will be in the `build/` folder. This bundles the interpreter, assets, and libraries using **PyInstaller**.
 
 ---
 
-## 🎮 Game: Leave The Light Off
+## ⚙ Configuration & Persistence
 
-A psychological horror game focusing on resource management and sensory deprivation.
-
-### Mechanics
-*   **The Blanket:** Your primary shield. Hold it to hide, but doing so drains your limited **Stamina**.
-*   **The Leg:** Sticking your leg out regenerates stamina rapidly but leaves you vulnerable.
-*   **The Lamp:** Your only source of light. Toggling it impacts visibility and entity aggression.
-*   **Sanity:** Listen to audio cues. If the room changes, you must react.
-
-### Controls
-
-| Action | Input |
-| :--- | :--- |
-| **Look Around** | Move Mouse to screen edges |
-| **Interact** | Left Mouse Click |
-| **Pull Blanket** | Click & Drag Mouse Down |
-| **Pause** | `ESC` |
-| **Skip Video** | `ENTER` or `SPACE` |
+*   **Save Files:** Stored in `Documents/Gufler/ltlo_save.json`.
+    *   Tracks progress (`night`), settings (`audio`, `resolution`), and flags.
+    *   *Note:* Deleting this file resets the game.
+*   **Runtime Config:** `shared/registry/storages/runtimeconfig.json`.
+    *   Defines the base render resolution (`1280x720`) used for coordinate scaling.
+*   **Game Capacities:** `shared/registry/storages/gamecapacities.json`.
+    *   Lists supported resolutions (720p up to 4K).
+*   **Logs:** Located in `shared/registry/runtime_root/logs/`.
+    *   Generated on startup and crash. Useful for debugging "save file corrupted" errors.
 
 ---
 
-## 📦 Building
+## 🗺 Roadmap & GDD Status
 
-To compile the engine and game into a standalone executable (Windows):
+### ✅ Implemented (Puppets on Stage)
+*   **Engine Core:** Full ECS-lite structure, Scenes, Input/Logic Queues.
+*   **UI System:** Menus, Settings, Audio Sliders, Resolution switching.
+*   **Night Environment:** 360-degree (clamped) looking mechanics.
+*   **Blanket Physics:** Tension-based pulling and "held" states.
+*   **Stamina System:** Logic for oxygen drain and regen.
+*   **The Lamp:** Toggling states and animation syncing.
+*   **Video Integration:** Cutscene playback support (ffmpeg).
 
-```cmd
-build.bat
-```
-This utilizes **PyInstaller** to bundle the Python interpreter, dependencies, and assets into `build/leavethelightoff.exe`.
+### 🚧 In Development (Rehearsing)
+*   **The Foot:** Visual implementation of the leg extension (Logic exists).
+*   **Underbed:** Subscene logic is ready, assets pending.
+*   **Sanity/Visual Glitches:** Shaders to implement the "wireframe" effect when lights are on.
 
----
-
-## 💾 Persistence
-
-*   **Saves:** Stored in your User Documents folder (`Documents/Gufler/ltlo_save.json`).
-*   **Logs:** Runtime logs are generated in `shared/registry/runtime_root/logs` for debugging crashes or logic errors.
+### 📝 Planned (The Script)
+*   **Monsters:**
+    *   *Front Monster:* Fast, glitchy movement.
+    *   *Closet Monster:* Slow approach, resets on blanket cover.
+*   **Moderators (Parents):** Logic to punish excessive noise or light.
+*   **The TV:** Interactive channel switching and "Debug Code" entry (`2-7-1-3`).
+*   **Endings:**
+    *   *Conformed:* Submit to the simulation.
+    *   *Breakthrough:* Crash the simulation via the TV code.
 
 ---
 
 **Author:** Gufl3r
-**Status:** In Development (dev1.0.0)
+**Engine:** MarionettEngine
+**License:** Proprietary / All Rights Reserved
