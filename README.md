@@ -14,13 +14,25 @@ This repository is a monorepo containing both the engine core and the game imple
 
 ## 🎭 The Philosophy: MarionettEngine
 
-> *"Every movement is coordinated. Everything happens at once. The entities are just empty corpses waiting for the strings to be pulled."*
+> *"The entities are empty corpses. The systems are the puppeteers. Frame 0 is the backstage."*
 
-Unlike traditional Object-Oriented game engines where objects update themselves, **MarionettEngine** treats Entities as passive data containers ("corpses"). They possess no logic, no methods, and no will of their own.
+**MarionettEngine** rejects the traditional Object-Oriented game loop where objects update themselves. Instead, it follows a strict theatrical metaphor:
 
-*   **The Stage (Scene):** Holds the state of the world.
-*   **The Puppeteers (Systems & Features):** External logic modules that calculate what should happen next.
-*   **The Strings (Transactional Commits):** The engine gathers all calculated changes and applies them in a single, coordinated transaction at the end of the tick. This ensures distinct separation between data and behavior.
+1.  **The Corpses (Entities):**
+    Entities are passive data containers. They have no methods, no logic, and no will. They are simply "corpses" containing a sprite, a position, and a state (e.g., `held=True`).
+
+2.  **The Puppeteers (Systems & Features):**
+    Logic exists exclusively in external Systems. These systems look at the stage, calculate the necessary movements, and determine the outcome of the frame.
+
+3.  **The Backstage (Frame 0):**
+    Before an entity steps into the light, it exists in **Frame 0**. This is the "Backstage."
+    *   Here, entities prepare to *contracenar* (act/interact).
+    *   Relationships are bound (e.g., a Button finding its Text Label).
+    *   Assets are loaded and hitboxes are defined.
+    *   Only after this preparation do they enter the cycle of the game loop (Frame 1+).
+
+4.  **Coordinated Movement:**
+    In a puppet show, strings are pulled simultaneously. In this engine, no entity changes instantly. Systems submit "Commits," and the Scene applies all changes in a single, coordinated transaction at the end of the tick.
 
 ---
 
