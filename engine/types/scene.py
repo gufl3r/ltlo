@@ -2,7 +2,7 @@ import dataclasses
 import typing
 
 @dataclasses.dataclass
-class EntitiesListByIdConfig:
+class EntityInitializerConfig:
     entity_generator: typing.Callable
     relation: typing.Literal["behind", "replace", None] = None
     anchor_id: int | None = None
@@ -10,7 +10,7 @@ class EntitiesListByIdConfig:
 
 @dataclasses.dataclass
 class CommitTracker:
-    config: EntitiesListByIdConfig
+    config: EntityInitializerConfig
     found_anchor: bool = False
     found_self: bool = False
     done: bool = False

@@ -1,6 +1,6 @@
 import engine.utils.libs
-engine.utils.libs.load()
 import engine.registry.registry
+engine.utils.libs.load()
 engine.registry.registry.load()
 import pyglet
 import shared.utils.save as saves_manager

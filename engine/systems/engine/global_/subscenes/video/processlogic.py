@@ -25,7 +25,7 @@ def process_interaction(scene: "VideoSubScene", logic_data: dict):
                     interaction_name=None,
                     hud=False
                 )
-            scene.commit_entities_update_by_id([scene_types.EntitiesListByIdConfig(entity_generator=current_video_frame)])
+            scene.commit_entities_update_by_id([scene_types.EntityInitializerConfig(entity_generator=current_video_frame)])
             scene.video_player.pause()
             scene.pause()
         case "resume_game":

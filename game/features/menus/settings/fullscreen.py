@@ -27,7 +27,7 @@ def toggle_fullscreen(scene: "SettingsScene", data: dict) -> None:
         )
 
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
+        scene_types.EntityInitializerConfig(
             self_id=button.id_,
             relation="replace",
             entity_generator=replace_button,

@@ -19,7 +19,7 @@ def process_interaction(scene: "SettingsScene", logic_data: dict):
                 _, message = error
                 scene.commit_entities_update_by_id(
                     [
-                        scene_types.EntitiesListByIdConfig(
+                        scene_types.EntityInitializerConfig(
                             lambda _, e=entity: e
                         )
                         for entity in dialog_entities.info_box(

@@ -33,7 +33,7 @@ def _update_overlay(scene: "NightScene"):
             )
     black_overlay_id: int = scene.cached_ids["black_overlay"]
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
+        scene_types.EntityInitializerConfig(
             self_id=black_overlay_id,
             relation="replace",
             entity_generator=alpha_changed_black,

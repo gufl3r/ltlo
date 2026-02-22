@@ -54,7 +54,7 @@ def numeric_stepper_change(scene: "SettingsScene", data: dict):
         )
 
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
+        scene_types.EntityInitializerConfig(
             self_id=value_id,
             relation="replace",
             entity_generator=replace_value_label,

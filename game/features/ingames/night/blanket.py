@@ -53,7 +53,7 @@ def generate_natural_logic(scene: "NightScene"):
 
     if blanket_y != current_y:
         scene.commit_entities_update_by_id([
-            scene_types.EntitiesListByIdConfig(
+            scene_types.EntityInitializerConfig(
                 self_id=blanket_entity.id_,
                 relation="replace",
                 entity_generator=new_blanket,
@@ -73,7 +73,7 @@ def hold_blanket(scene: "NightScene", logic_data: dict):
         )
     blanket_entity_id: int = logic_data["entity_id"]
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
+        scene_types.EntityInitializerConfig(
             self_id=blanket_entity_id,
             relation="replace",
             entity_generator=new_blanket,
@@ -81,6 +81,8 @@ def hold_blanket(scene: "NightScene", logic_data: dict):
     ])
 
 def let_go_of_blanket(scene: "NightScene", logic_data: dict):
+    if not "blanket" in scene.cached_ids:
+        return
     def new_blanket(entity: scene_types.Entity):
         states = copy.deepcopy(entity.states)
         for i, state in enumerate(states):
@@ -93,7 +95,7 @@ def let_go_of_blanket(scene: "NightScene", logic_data: dict):
         )
     blanket_entity_id: int = scene.cached_ids["blanket"]
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
+        scene_types.EntityInitializerConfig(
             self_id=blanket_entity_id,
             relation="replace",
             entity_generator=new_blanket,

@@ -86,21 +86,20 @@ def apply_settings(save: dict, window: Window) -> None | tuple[str, str]:
     resolution = settings["resolution"]
     fullscreen = settings["fullscreen"]
 
-    window.set_fullscreen(False)
-    try:
-        window.set_fullscreen(
-            fullscreen=fullscreen,
-            width=resolution[0],
-            height=resolution[1]
-        )
-        window._height = resolution[1] + 1 # screen flicker fix (only happens if size exactly matches screen res)
-    except pyglet.window.NoSuchScreenModeException as e:
+    if not window.screen.get_closest_mode(width=resolution[0],height=resolution[1]):
         return (
-            str(e),
+            str(pyglet.window.NoSuchScreenModeException),
             "An error occurred while setting this screen mode:\n"
             f"'fullscreen {resolution[0]}x{resolution[1]}'\n\n"
             "Please check if your monitor supports it."
         )
+    window.set_fullscreen(False)
+    window.set_fullscreen(
+        fullscreen=fullscreen,
+        width=resolution[0],
+        height=resolution[1]
+    )
+    window._height = resolution[1] + 1 # screen flicker fix (only happens if size exactly matches screen res)
 
 
 # ---------- VALIDATION ----------

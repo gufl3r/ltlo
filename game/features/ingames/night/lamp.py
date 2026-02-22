@@ -50,7 +50,7 @@ def toggle_lamp(scene: "NightScene", logic_data: dict):
         )
     
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
+        scene_types.EntityInitializerConfig(
             self_id=lamp_id,
             relation="replace",
             entity_generator=new_lamp,
@@ -90,7 +90,7 @@ def toggle_lamp(scene: "NightScene", logic_data: dict):
 #     lamp_entity_id: int = logic_data["entity_id"]
 
 #     scene.commit_entities_update_by_id([
-#         scene_types.EntitiesListByIdConfig(
+#         scene_types.EntityInitializerConfig(
 #             self_id=lamp_entity_id,
 #             relation="replace",
 #             entity_generator=new_lamp,

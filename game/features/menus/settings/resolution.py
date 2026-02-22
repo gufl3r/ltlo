@@ -48,7 +48,7 @@ def switch_resolution(scene: "SettingsScene", data: dict) -> None:
         )
 
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
+        scene_types.EntityInitializerConfig(
             self_id=label_id,
             relation="replace",
             entity_generator=replace_label,

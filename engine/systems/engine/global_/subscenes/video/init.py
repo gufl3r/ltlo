@@ -28,7 +28,7 @@ def init_entities(scene: "VideoSubScene"):
     ]
 
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
+        scene_types.EntityInitializerConfig(
             relation=None,
             entity_generator=lambda _, e=e: e
         )

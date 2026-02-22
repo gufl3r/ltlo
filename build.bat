@@ -1,12 +1,11 @@
 call .\.venv\Scripts\activate
 
 pyinstaller --onefile ^
+  --noconsole ^
   --distpath build ^
   --workpath build\_work ^
-  --add-data "assets;assets" ^
-  --add-data "libs;libs" ^
-  --add-data "gameinfo.json;." ^
-  --add-data "gamecapacities.json;." ^
-  --add-data "runtimeconfig.json;." ^
+  --add-data "game/assets;game/assets" ^
+  --add-data "shared/libs;shared/libs" ^
+  --add-data "shared/registry/storages;shared/registry/storages" ^
   --name leavethelightoff ^
   main.py

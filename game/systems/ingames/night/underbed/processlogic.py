@@ -5,7 +5,8 @@ if typing.TYPE_CHECKING:
 
 def process_interaction(scene: "UnderBedSubscene", logic_data: dict):
     match logic_data["interaction_name"]:
-        
+        case "exit_under_bed":
+            return "exit_under_bed"
 
         case "request_pause":
             scene.pause()

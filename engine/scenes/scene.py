@@ -15,14 +15,18 @@ class Scene:
     ANIMATION_LOOP_TAG = "animation_loop"
 
     def __init__(self, window: Window, save: dict) -> None:
-        self.window = window
-        self.save = save
+        self.window: Window = window
+        self.save: dict = save
+        self.PERFORMANCE_CYCLE_TICKS = int(self.FPS * 0.75)
         self.ticks_in_cycle: int = 0
         self.current_cycle: int = 0
         self._input_queue: list = []
         self._logic_queue: list = []
         self._entities: list[scene_types.Entity] = []
         self.audio_player: pyglet.media.Player = pyglet.media.Player()
+        self.assets: dict = {}
+        self.cached_ids: dict[str, int] = {}
+        self._total_paused_duration: float = 0
 
         audio_settings = self.save["settings"]["audio"]
         self.audio_player.volume = audio_settings["music"] * audio_settings["master"]
@@ -79,13 +83,20 @@ class Scene:
         disposable_player.seek(0)
 
     def loop_subscene(self, subscene_class, data: dict):
-        subscene_obj = subscene_class(self.window,self.save,data)
+        start_paused = time.perf_counter()
+        
+        subscene_obj = subscene_class(self.window, self.save, data)
         result = subscene_obj.loop()
-        del subscene_obj
+        
+        self._total_paused_duration += time.perf_counter() - start_paused
+        
+        subscene_obj.dispose()
         self.register_handlers()
+        
         if result == "exit":
             self._logic_queue.append({"name": "exit"})
             return
+        
         return result
         
     def play_cutscene(self, video_asset: pyglet.media.Source):
@@ -154,10 +165,10 @@ class Scene:
     
     def commit_entities_update_by_id(
         self, 
-        configs: list[scene_types.EntitiesListByIdConfig]
-    ) -> list[scene_types.EntitiesListByIdConfig]:
+        configs: list[scene_types.EntityInitializerConfig]
+    ) -> list[scene_types.EntityInitializerConfig]:
         commit_trackers: list[scene_types.CommitTracker] = []
-        failed_configs: list[scene_types.EntitiesListByIdConfig] = []
+        failed_configs: list[scene_types.EntityInitializerConfig] = []
 
         for config in configs:
             # ---- proteção de identidade ----
@@ -205,7 +216,7 @@ class Scene:
             for commit_tracker in commit_trackers:
                 if commit_tracker.done:
                     continue
-                config: scene_types.EntitiesListByIdConfig = commit_tracker.config
+                config: scene_types.EntityInitializerConfig = commit_tracker.config
                 if entity.id_ == config.anchor_id:
                     commit_tracker.found_anchor = True
                     if config.relation == "behind":
@@ -233,7 +244,7 @@ class Scene:
                 new_entities.append(entity)
 
         for commit_tracker in commit_trackers:
-            config: scene_types.EntitiesListByIdConfig = commit_tracker.config
+            config: scene_types.EntityInitializerConfig = commit_tracker.config
             if config.relation == "replace" and not commit_tracker.found_self:
                 if config.anchor_id is None:
                     new_entities.append(config.entity_generator(None))
@@ -267,7 +278,7 @@ class Scene:
         return found_entities
 
     # ---------- INPUT ----------
-    def _process_events(self) -> None:
+    def _process_inputs(self) -> None:
         self.window.dispatch_events()
         for event in self._input_queue:
             match event["name"]:
@@ -432,35 +443,58 @@ class Scene:
             new_entities[new_entity.hud].append(new_entity)
 
         self._entities = new_entities[0] + new_entities[1]
+        
+    def compute_new_frame_time(self, target_time: float, elapsed: float, current_frame_time: float) -> float:
+        if elapsed <= 0:
+            return current_frame_time
+        
+        multiplier = target_time / elapsed
+        new_frame_time = current_frame_time * multiplier
+
+        return max(0.0, new_frame_time)  
 
     # ---------- MAIN LOOP ----------
     def loop(self) -> str:
         frame_time = 1 / self.FPS
         cycle_start = time.perf_counter()
+        performance_ticks = 0
 
         while True:
-            time.sleep(frame_time)
+            time.sleep(
+                frame_time)
             pyglet.clock.tick()
 
             self.ticks_in_cycle += 1
+            performance_ticks += 1
+
+            if performance_ticks >= self.PERFORMANCE_CYCLE_TICKS:
+                now = time.perf_counter()
+                elapsed = now - cycle_start
+                
+                effective_elapsed = elapsed - self._total_paused_duration
+                
+                if effective_elapsed > 0:
+                    new_ft = self.compute_new_frame_time(
+                        target_time=0.75,
+                        elapsed=effective_elapsed,
+                        current_frame_time=frame_time
+                    )
+                    
+                    frame_time = new_ft
+
+                self._total_paused_duration = 0
+                cycle_start = now
+                performance_ticks = 0
 
             if self.ticks_in_cycle >= self.FPS:
-                now = time.perf_counter()
-                elapsed = now - cycle_start  # quanto tempo real levou esse ciclo
-
-                # erro relativo do ciclo
-                correction = elapsed / 1.0  # 1.0s é o alvo
-                frame_time /= correction
-
                 self.ticks_in_cycle = 0
-                cycle_start = now
                 self.current_cycle += 1
             
-            self._process_events()
-            self._tick_audio()
+            self._process_inputs()
             self.generate_natural_logic()
+            self._tick_audio()
             self._update_entities()
-            new_scene = self._process_logic()
-            if new_scene:
-                return new_scene
             self._draw()
+            result = self._process_logic()
+            if result:
+                return result

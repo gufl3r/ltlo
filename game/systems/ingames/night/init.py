@@ -17,6 +17,8 @@ def init_assets(scene: "NightScene"):
             "game/assets/ingames/night/dark_room.png",
 
             "game/assets/ingames/night/vignette.png",
+
+            "game/assets/ingames/night/ub_under_bed.png"
         ],
         animations=
         [
@@ -43,7 +45,7 @@ def init_entities(scene: "NightScene"):
         -1,
         None,
         False,
-        ["room_movable"]
+        ["movable"]
     )
 
     look_triggers_size = (scene.save["settings"]["resolution"][0] * 0.3, scene.save["settings"]["resolution"][1])
@@ -123,7 +125,7 @@ def init_entities(scene: "NightScene"):
         duration=-1,
         interaction_name="toggle_lamp",
         hud=False,
-        tags=["room_movable"],
+        tags=["movable"],
         states=[scene_types.State("turned_on", {"value": False})]
     )
 
@@ -156,7 +158,7 @@ def init_entities(scene: "NightScene"):
         ticks_left=-1,
         interaction_name="toggle_foot",
         hud=False,
-        tags=["room_movable"]
+        tags=["movable"]
     )
 
     # lub = look under bed
@@ -178,7 +180,7 @@ def init_entities(scene: "NightScene"):
         ticks_left=-1,
         interaction_name="look_under_bed",
         hud=False,
-        tags=["room_movable"]
+        tags=["movable"]
     )
 
     vignette = generic_entities.image(
@@ -211,21 +213,14 @@ def init_entities(scene: "NightScene"):
         black_overlay
     ]
 
-    scene.commit_entities_update_by_id(
-        [
-            scene_types.EntitiesListByIdConfig(
-                relation=None,
-                entity_generator=lambda _, e=e: e
-            )
-            for e in initial_entities
-        ]
-    )
+    scene.commit_entities_update_by_id([scene_types.EntityInitializerConfig(entity_generator=lambda _, e=e: e) for e in initial_entities])
 
 def init_media(scene: "NightScene"):
     scene.play_cutscene(scene.assets["videos"]["test"])
 
 def init_vars(scene: "NightScene") -> None:
     scene.x = 0
+    scene.y = 0
     scene.player = night_types.Player()
     scene.cached_ids = {}
 
@@ -233,7 +228,8 @@ def post_init(scene: "NightScene"):
     scene.cached_ids["blanket"] = scene.entities_by_name("blanket")[0].id_
     scene.cached_ids["lamp"] = scene.entities_by_name("lamp")[0].id_
     scene.cached_ids["black_overlay"] = scene.entities_by_name("black_overlay")[0].id_
-    scene.cached_ids["dark_room"] = scene.entities_by_name("dark_room")[0].id_
+    dark_room = scene.entities_by_name("dark_room")[0]
+    scene.cached_ids["dark_room"] = dark_room.id_
 
     for entity in scene._entities:
         if entity.name == "look_trigger":
@@ -243,7 +239,7 @@ def post_init(scene: "NightScene"):
             key = f"look_{side}_{speed}"
             scene.cached_ids[key] = entity.id_
 
-    room_width = scene.entities_by_name("dark_room")[0].drawable.width
+    room_width = dark_room.drawable.width
     window_width = scene.save["settings"]["resolution"][0]
     center_offset = (room_width - window_width) / 2
-    sight_feature.apply_sight_offset(scene, center_offset)
+    sight_feature.apply_sight_offset(scene, (center_offset, 0 ), dark_room)

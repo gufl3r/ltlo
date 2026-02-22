@@ -71,7 +71,7 @@ Your instinct screams for light, but in this place, the light is not your ally. 
     Logic resides exclusively in external Systems (e.g., `game/features/night/blanket.py`). These systems observe the scene, calculate physics or logic based on the data, and determine what the entities *should* do next.
 
 3.  **Coordinated Movement (Transactional Commits):**
-    In a puppet show, strings are pulled in harmony. In the code, systems do not modify entities directly in real-time. They submit **Commit Configurations** (`EntitiesListByIdConfig`). The Scene applies all changes in a single, atomic transaction at the end of the tick, ensuring frame-perfect synchronization.
+    In a puppet show, strings are pulled in harmony. In the code, systems do not modify entities directly in real-time. They submit **Commit Configurations** (`EntityInitializerConfig`). The Scene applies all changes in a single, atomic transaction at the end of the tick, ensuring frame-perfect synchronization.
 
 ### The "Backstage" (Frame 0)
 The engine treats the first frame of an entity's life (`ticks_alive == 0`) as the **Backstage**.

@@ -3,6 +3,7 @@ import engine.systems.engine.global_.subscenes.pause.init as init_system
 import engine.systems.engine.global_.subscenes.pause.processlogic as process_logic_system
 
 class PauseSubScene(base_subscene.SubScene):
+    FPS = 30
     def __init__(self, window, save, data: dict) -> None:
         super().__init__(window, save, data)
         

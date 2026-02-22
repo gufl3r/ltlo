@@ -60,3 +60,15 @@ def asset_path_to_obj(
 
     print(f"Assets loaded in {time.perf_counter() - start_time}")
     return objs
+
+def subscene_assets(asset_objs: dict, prefix: str):
+    subscene_objs = {}
+
+    for obj_key in asset_objs:
+        if obj_key not in subscene_objs:
+            subscene_objs[obj_key] = {}
+        for asset_key in asset_objs[obj_key]:
+            if asset_key.startswith(prefix):
+                subscene_objs[obj_key][asset_key.removeprefix(prefix)] = asset_objs[obj_key][asset_key]
+    
+    return subscene_objs

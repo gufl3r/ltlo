@@ -12,10 +12,9 @@ class NightScene(base_scene.Scene):
 
     def __init__(self, window: Window, save: dict) -> None:
         super().__init__(window, save)
-        self.assets: dict
         self.x: int
+        self.y: int
         self.player: night_types.Player
-        self.cached_ids: dict[str, int]
 
         init_system.init_assets(self)
         init_system.init_vars(self)

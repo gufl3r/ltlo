@@ -138,8 +138,7 @@ def init_entities(scene: "PauseSubScene"):
     ]
 
     scene.commit_entities_update_by_id([
-        scene_types.EntitiesListByIdConfig(
-            relation=None,
+        scene_types.EntityInitializerConfig(
             entity_generator=lambda _, e=e: e
         )
         for e in entities_to_add

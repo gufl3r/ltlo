@@ -167,12 +167,4 @@ def init_entities(scene: "SettingsScene", save: dict):
         cutscene_label, *cutscene_stepper
     ]
 
-    scene.commit_entities_update_by_id(
-        [
-            scene_types.EntitiesListByIdConfig(
-                relation=None,
-                entity_generator=lambda _old, e=e: e
-            )
-            for e in initial_entities
-        ]
-    )
+    scene.commit_entities_update_by_id([scene_types.EntityInitializerConfig(entity_generator=lambda _, e=e: e) for e in initial_entities])
